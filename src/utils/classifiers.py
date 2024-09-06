@@ -14,9 +14,12 @@ from utils.consts import SEEDS
 import utils.consts as consts
 import matplotlib.pyplot as plt
 import os
+from DNN import DeepTFL
 import warnings
+from sklearn.neural_network import MLPClassifier
+from tabpfn import TabPFNClassifier
 warnings.filterwarnings('ignore')
-list_clfs = ['RandomForest', 'knn', 'dt', 'reglog', 'lasso']
+list_clfs = ['DeepTLF','MLP']
 
 
 def train_compute_metrics(classifier: str,
@@ -74,6 +77,34 @@ def train_compute_metrics(classifier: str,
             'alpha': np.logspace(-6, 3, 10)
         }
 
+    elif classifier == 'DeepTLF':
+        selected_clf = DeepTFL(seed = seed, task='class')
+        # selected_clf =DeepTFL(n_est=30, max_depth=3, drop=0.5, n_layers=3, task='class')
+        param_grid = {
+            'n_est' : [10,20,40,60],
+            'max_depth' : [3,6,9],
+            'drop' : [0.1,0.2,0.3],
+            'n_layers' : [3,5,8]
+        }
+    elif classifier == 'TabPFN':
+        selected_clf = TabPFNClassifier(no_preprocess_mode = True, device='cuda', seed=seed)
+
+        param_grid = {
+            'N_ensemble_configurations' : [20,30,40, 50],
+            'batch_size_inference': [20,30,40],
+            'feature_shift_decoder' : [True, False]
+        }
+    elif classifier == 'MLP':
+        selected_clf = MLPClassifier(max_iter=1000, random_state=seed)
+
+        param_grid = {
+            'hidden_layer_sizes': [(10, 10), (20, 20), (50, 50)],
+            'activation': ['tanh', 'relu'],
+            'solver': ['sgd', 'adam'],
+            'alpha': [0.0001, 0.05],
+            'learning_rate': ['constant', 'adaptive'],
+        }
+
     elif classifier == 'RandomForest':
         
         lenght_train = x_train.shape[0]
@@ -88,7 +119,8 @@ def train_compute_metrics(classifier: str,
         }
         # 'min_samples_split': range(lenght_15_percent_val, lenght_20_percent_val)}
 
-    return train_predict_clf(x_train, y_train, x_test, y_test, selected_clf, param_grid,partitions,SHAP=SHAP,ALE=ALE)
+    return train_predict_clf(x_train, y_train, x_test, y_test, selected_clf, param_grid,partitions,SHAP=SHAP,ALE=ALE,
+                             model_name= classifier)
 
 
 def train_predict_clf(x_train: np.array,
@@ -98,25 +130,32 @@ def train_predict_clf(x_train: np.array,
                       clf, param_grid,
                       Partitions,
                       SHAP=False,
-                      ALE=False) -> Tuple[float, float, float, float]:
+                      ALE=False,
+                      model_name='knn') -> Tuple[float, float, float, float]:
 
     print(clf)
     print(param_grid)
-
-    grid_cv = GridSearchCV(clf, param_grid=param_grid, scoring='roc_auc', cv=5, return_train_score=True, n_jobs=-1)
-    grid_cv.fit(x_train, y_train)
-
-    auc_knn_all_train = np.array(grid_cv.cv_results_['mean_train_score'])
-    auc_knn_all_val = np.array(grid_cv.cv_results_['mean_test_score'])
+    if model_name == 'DeepTLF':
+        n_jobs = 1
+    else:
+        n_jobs = -1
+    grid_cv = GridSearchCV(clf, param_grid=param_grid, scoring='accuracy', cv=5, n_jobs=n_jobs)
+    grid_cv.fit(np.asarray(x_train), np.asarray(y_train))
     # plot_grid(param_grid['n_neighbors'], auc_knn_all_train, auc_knn_all_val)
 
-    # print("Best hyperparams: {}".format(grid_cv.best_params_))
-    # print("Best score {:.3f}".format(grid_cv.best_score_))
+    print("Best hyperparams: {}".format(grid_cv.best_params_))
+    print("Best score {:.3f}".format(grid_cv.best_score_))
 
     best_clf = grid_cv.best_estimator_
-    best_clf.fit(x_train, y_train)
+    best_clf.fit(np.asarray(x_train), np.asarray(y_train))
     y_pred_train = best_clf.predict(x_train)
     y_pred_test = best_clf.predict(x_test)
+    # else:
+    #     clf.fit(X_train=np.asarray(x_train), y_train=np.asarray(y_train))
+    #     dtlf_y_hat = clf.predict(x_test)
+
+
+
     if SHAP=='decision_plot' or SHAP=='Kernel' or SHAP=='waterfall' or SHAP=='force_plot':
         if SHAP=='Kernel':
             explainer = shap.KernelExplainer(best_clf.predict_proba, x_train, link="logit")
