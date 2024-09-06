@@ -138,7 +138,7 @@ def train_predict_clf(x_train: np.array,
     if model_name == 'DeepTLF':
         n_jobs = 1
     else:
-        n_jobs =
+        n_jobs = 30
     grid_cv = GridSearchCV(clf, param_grid=param_grid, scoring='accuracy', cv=5, n_jobs=n_jobs)
     grid_cv.fit(np.asarray(x_train), np.asarray(y_train))
     # plot_grid(param_grid['n_neighbors'], auc_knn_all_train, auc_knn_all_val)
