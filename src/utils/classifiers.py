@@ -19,7 +19,7 @@ import warnings
 from sklearn.neural_network import MLPClassifier
 from tabpfn import TabPFNClassifier
 warnings.filterwarnings('ignore')
-list_clfs = ['DeepTLF','MLP']
+list_clfs = ['TabPFN', 'MLP']
 
 
 def train_compute_metrics(classifier: str,
@@ -95,20 +95,20 @@ def train_compute_metrics(classifier: str,
             'feature_shift_decoder' : [True, False]
         }
     elif classifier == 'MLP':
-        selected_clf = MLPClassifier(max_iter=1000, random_state=seed)
+        selected_clf = MLPClassifier(max_iter=10000, random_state=seed)
 
         param_grid = {
-            'hidden_layer_sizes': [(10, 10), (20, 20), (50, 50)],
+            'hidden_layer_sizes': [(10, 10), (20, 20), (50, 50), (80, 80), (100, 100)],
             'activation': ['tanh', 'relu'],
             'solver': ['sgd', 'adam'],
-            'alpha': [0.0001, 0.05],
+            'alpha': [0.0001, 0.01,0.001, 0.1],
             'learning_rate': ['constant', 'adaptive'],
         }
 
     elif classifier == 'RandomForest':
         
         lenght_train = x_train.shape[0]
-        selected_clf = RandomForestClassifier(n_jobs=4, random_state=seed)
+        selected_clf = RandomForestClassifier(n_jobs=20, random_state=seed)
 
         param_grid = {
             'n_estimators': [10, 20, 30],
