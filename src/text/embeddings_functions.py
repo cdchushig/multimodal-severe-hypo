@@ -21,7 +21,7 @@ import warnings
 from sklearn.neural_network import MLPClassifier
 from tabpfn import TabPFNClassifier
 
-jobs= -1
+jobs= 40
 def main_function(df_data, var_name='raw_medcon', encoding='tfidf', classifiers='lasso', ngrams=1, embedding_size=50,
                   Reduction='None',kernelKPCA='rbf',FS=False, path=''):
     y_label=df_data['label_encoded']
@@ -147,7 +147,7 @@ def main_function(df_data, var_name='raw_medcon', encoding='tfidf', classifiers=
 
             elif i == 'DeepTLF':
                 selected_clf = DeepTFL(seed=0, task='class')
-                # selected_clf =DeepTFL(n_est=30, max_depth=3, drop=0.5, n_layers=3, task='class')
+
                 param_grid = {
                     'n_est': [10, 20, 40, 60],
                     'max_depth': [3, 6, 9],
@@ -155,11 +155,11 @@ def main_function(df_data, var_name='raw_medcon', encoding='tfidf', classifiers=
                     'n_layers': [3, 5, 8]
                 }
                 grid_cv = GridSearchCV(estimator=selected_clf, param_grid=param_grid, scoring='accuracy', cv=5, n_jobs=1)
-                grid_cv.fit(x_train, y_train)
+                grid_cv.fit(np.asarray(x_train), np.asarray(y_train))
                 clf_model = grid_cv.best_estimator_
 
-                clf_model.fit(x_train, y_train)
-                y_pred = clf_model.predict(x_test)
+                clf_model.fit(np.asarray(x_train), np.asarray(y_train))
+                y_pred = clf_model.predict(np.asarray(x_test))
 
             elif i == 'TabPFN':
                 selected_clf = TabPFNClassifier(no_preprocess_mode=True, device='cuda', seed=0)
