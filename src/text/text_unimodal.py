@@ -14,13 +14,23 @@ def conditions_unimodal():
     df = patients.merge(df, on=['PtID']).sort_values(by=['PtID'])
 
 
-    # Embeddings(Database=df, var_name='medcon1',classifier= ['dt'], metrics=['30'], encoding=['tfidf'], path=path1, FS=False)
-    # Embeddings(Database=df, var_name='medcon1',classifier= ['dt'], metrics=['70'], encoding=['w2vec'],  path=path1, FS=False)
-    Embeddings(Database=df, var_name='medcon1', classifier=['knn'], metrics=['70'], encoding=['Longformer'], Reduction_model='KPCA', path=path1, FS=False)
-    Embeddings(Database=df, var_name='medcon1', classifier=['lasso'], metrics=['50'], encoding=['Clinical'], Reduction_model='PCA', path=path1, FS=False)
+
+    # Embeddings(Database=df, var_name='medcon1', classifier=['knn'], metrics=['70'], encoding=['Longformer'], Reduction_model='KPCA', path=path1, FS=False)
+    # Embeddings(Database=df, var_name='medcon1', classifier=['lasso'], metrics=['50'], encoding=['Clinical'], Reduction_model='PCA', path=path1, FS=False)
+
+    Embeddings(Database=df, var_name='medcon1', classifier=['knn','reglog','MLP'], metrics=[10,30,50,70,100], encoding=['Longformer','Clinical'],
+               Reduction_model='KPCA', path=path1, FS=False)
+
+    Embeddings(Database=df, var_name='medcon1', classifier=['knn', 'reglog','MLP'], metrics=[10, 30, 50, 70, 100],
+               encoding=['Longformer', 'Clinical'],
+               Reduction_model='PCA', path=path1, FS=False)
+
+    Embeddings(Database=df, var_name='medcon1', classifier=['knn', 'reglog','MLP'], metrics=[10, 30, 50, 70, 100],
+               encoding=['tfidf', 'w2vec'], path=path1, FS=False)
+
 
     # Conditions with FS
-    Embeddings(Database=df, var_name='medcon1', classifier=['knn'], metrics=['50'], encoding=['Clinical'], Reduction_model='PCA', path=path1, FS=3)
+    # Embeddings(Database=df, var_name='medcon1', classifier=['knn'], metrics=['50'], encoding=['Clinical'], Reduction_model='PCA', path=path1, FS=3)
 
 def medications_unimodal():
     path1 = os.path.join(consts.PATH_PROJECT_TEXT_METRICS, 'Medications')
@@ -35,4 +45,14 @@ def medications_unimodal():
     # Embeddings(Database=df, var_name='medications3',classifier= ['knn'], metrics=['50'], encoding=['Longformer'],Reduction_model='PCA', path=path1, FS=False)
     # Embeddings(Database=df, var_name='medications3',classifier= ['knn'], metrics=['10'], encoding=['Clinical'], Reduction_model='PCA', path=path1, FS=False)
     ## Medications with FS
-    Embeddings(Database=df, var_name='medications3',classifier= ['knn'], metrics=['10'], encoding=['Clinical'], Reduction_model='PCA', path=path1, FS=2)
+    # Embeddings(Database=df, var_name='medications3',classifier= ['knn'], metrics=['10'], encoding=['Clinical'], Reduction_model='PCA', path=path1, FS=2)
+
+    Embeddings(Database=df, var_name='medications3', classifier=['knn','reglog','MLP'], metrics=[10,30,50,70,100], encoding=['Longformer','Clinical'],
+               Reduction_model='KPCA', path=path1, FS=False)
+
+    Embeddings(Database=df, var_name='medications3', classifier=['knn', 'reglog','MLP'], metrics=[10, 30, 50, 70, 100],
+               encoding=['Longformer', 'Clinical'],
+               Reduction_model='PCA', path=path1, FS=False)
+
+    Embeddings(Database=df, var_name='medications3', classifier=['knn', 'reglog','MLP'], metrics=[10, 30, 50, 70, 100],
+               encoding=['tfidf', 'w2vec'], path=path1, FS=False)

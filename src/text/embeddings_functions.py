@@ -16,8 +16,12 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
 import utils.consts as consts
 from utils.Embedding_text import Embedded_text
+from DNN import DeepTFL
+import warnings
+from sklearn.neural_network import MLPClassifier
+from tabpfn import TabPFNClassifier
 
-
+jobs= -1
 def main_function(df_data, var_name='raw_medcon', encoding='tfidf', classifiers='lasso', ngrams=1, embedding_size=50,
                   Reduction='None',kernelKPCA='rbf',FS=False, path=''):
     y_label=df_data['label_encoded']
@@ -46,7 +50,7 @@ def main_function(df_data, var_name='raw_medcon', encoding='tfidf', classifiers=
                     'alpha': np.logspace(-6, 3, 10)
                 }
                 grid_cv = GridSearchCV(estimator=model_lasso, param_grid=hyperparameter_space, scoring='roc_auc',
-                                       cv=5, n_jobs=-1)
+                                       cv=5, n_jobs=jobs)
                 grid_cv.fit(x_train, y_train)
 
                 clf_model = grid_cv.best_estimator_
@@ -58,15 +62,11 @@ def main_function(df_data, var_name='raw_medcon', encoding='tfidf', classifiers=
                         y_pred[l] = 1.0
                     else:
                         y_pred[l] = 0.0
-                acc_val, specificity_val, recall_val, roc_auc_val = compute_classification_prestations(y_test, y_pred)
-                df_acc[i].iloc[idx ] = acc_val
-                df_recall[i].iloc[idx ] = recall_val
-                df_roc[i].iloc[idx] = roc_auc_val
-                df_spec[i].iloc[idx] = specificity_val
+
             elif i == 'Random Forest':
                 print(i, '----', encoding, '---')
 
-                model = RandomForestClassifier(n_jobs=4, random_state=0)
+                model = RandomForestClassifier(n_jobs=jobs, random_state=0)
                 model_param_grid = {
                     'n_estimators': [10,20,30],
                     'max_depth': range(2, 10),
@@ -79,28 +79,19 @@ def main_function(df_data, var_name='raw_medcon', encoding='tfidf', classifiers=
                 model_clf = grid_cv.best_estimator_
 
                 y_pred = model_clf.predict(x_test)
-                acc_val, specificity_val, recall_val, roc_auc_val = compute_classification_prestations(y_test, y_pred)
-                df_acc[i].iloc[idx] = acc_val
-                df_recall[i].iloc[idx] = recall_val
-                df_roc[i].iloc[idx] = roc_auc_val
-                df_spec[i].iloc[idx] = specificity_val
+
             elif i== 'knn':
                 selected_clf = KNeighborsClassifier()
                 param_grid = {
                     'n_neighbors': range(1, 50, 2),
                     # 'metric': 'hamming'
                 }
-                grid_cv = GridSearchCV(selected_clf, param_grid=param_grid, cv=5, scoring='roc_auc')
+                grid_cv = GridSearchCV(selected_clf, param_grid=param_grid, cv=5, scoring='roc_auc', n_jobs=jobs)
                 grid_cv.fit(x_train, y_train)
                 print(grid_cv.best_params_)
                 mlp_clf = grid_cv.best_estimator_
 
                 y_pred = mlp_clf.predict(x_test)
-                acc_val, specificity_val, recall_val, roc_auc_val = compute_classification_prestations(y_test, y_pred)
-                df_acc[i].iloc[idx] = acc_val
-                df_recall[i].iloc[idx] = recall_val
-                df_roc[i].iloc[idx] = roc_auc_val
-                df_spec[i].iloc[idx] = specificity_val
 
             elif i == 'reglog':
                 selected_clf = LogisticRegression()
@@ -109,17 +100,13 @@ def main_function(df_data, var_name='raw_medcon', encoding='tfidf', classifiers=
                     'C': [1e-6, 1e-5, 1e-4, 1e-2, 1, 5, 10, 20],
                     'solver': ['liblinear', 'saga']}
 
-                grid_cv = GridSearchCV(selected_clf, param_grid=param_grid , cv=5, scoring='roc_auc')
+                grid_cv = GridSearchCV(selected_clf, param_grid=param_grid , cv=5, scoring='roc_auc', n_jobs=jobs)
                 grid_cv.fit(x_train, y_train)
                 print(grid_cv.best_params_)
                 mlp_clf = grid_cv.best_estimator_
 
                 y_pred = mlp_clf.predict(x_test)
-                acc_val, specificity_val, recall_val, roc_auc_val = compute_classification_prestations(y_test, y_pred)
-                df_acc[i].iloc[idx] = acc_val
-                df_recall[i].iloc[idx] = recall_val
-                df_roc[i].iloc[idx] = roc_auc_val
-                df_spec[i].iloc[idx] = specificity_val
+
 
             elif i == 'svm':
                 print(i, '----', encoding, '---')
@@ -133,18 +120,13 @@ def main_function(df_data, var_name='raw_medcon', encoding='tfidf', classifiers=
             'C': [0.001, 0.10, 0.1, 10, 25, 100, 1000]
         }
                 grid_cv = GridSearchCV(estimator=model_clf_generic, param_grid=hyperparameter_space, scoring='roc_auc',
-                                       cv=5)
+                                       cv=5, n_jobs=jobs)
                 grid_cv.fit(x_train, y_train)
 
                 clf_model = grid_cv.best_estimator_
                 clf_model.fit(x_train, y_train)
 
                 y_pred = clf_model.predict(x_test)
-                acc_val, specificity_val, recall_val, roc_auc_val = compute_classification_prestations(y_test, y_pred)
-                df_acc[i].iloc[idx ] = acc_val
-                df_recall[i].iloc[idx ] = recall_val
-                df_roc[i].iloc[idx ] = roc_auc_val
-                df_spec[i].iloc[idx ] = specificity_val
             elif i == 'dt':
                 print(i, '----', encoding, '---')
 
@@ -155,18 +137,67 @@ def main_function(df_data, var_name='raw_medcon', encoding='tfidf', classifiers=
         }
                 model_tree = DecisionTreeClassifier(random_state=0)
 
-                grid_cv = GridSearchCV(estimator=model_tree, param_grid=tuned_parameters, scoring='roc_auc', cv=5)
+                grid_cv = GridSearchCV(estimator=model_tree, param_grid=tuned_parameters, scoring='roc_auc', cv=5,
+                                       n_jobs=jobs)
                 grid_cv.fit(x_train, y_train)
                 clf_model = grid_cv.best_estimator_
 
                 clf_model.fit(x_train, y_train)
                 y_pred = clf_model.predict(x_test)
-                acc_val, specificity_val, recall_val, roc_auc_val = compute_classification_prestations(y_test, y_pred)
 
-                df_acc[i].iloc[idx ] = acc_val
-                df_recall[i].iloc[idx ] = recall_val
-                df_roc[i].iloc[idx ] = roc_auc_val
-                df_spec[i].iloc[idx] = specificity_val
+            elif i == 'DeepTLF':
+                selected_clf = DeepTFL(seed=0, task='class')
+                # selected_clf =DeepTFL(n_est=30, max_depth=3, drop=0.5, n_layers=3, task='class')
+                param_grid = {
+                    'n_est': [10, 20, 40, 60],
+                    'max_depth': [3, 6, 9],
+                    'drop': [0.1, 0.2, 0.3],
+                    'n_layers': [3, 5, 8]
+                }
+                grid_cv = GridSearchCV(estimator=selected_clf, param_grid=param_grid, scoring='accuracy', cv=5, n_jobs=1)
+                grid_cv.fit(x_train, y_train)
+                clf_model = grid_cv.best_estimator_
+
+                clf_model.fit(x_train, y_train)
+                y_pred = clf_model.predict(x_test)
+
+            elif i == 'TabPFN':
+                selected_clf = TabPFNClassifier(no_preprocess_mode=True, device='cuda', seed=0)
+
+                param_grid = {
+                    'N_ensemble_configurations': [20, 30, 40, 50],
+                    'batch_size_inference': [20, 30, 40],
+                    'feature_shift_decoder': [True, False]
+                }
+                grid_cv = GridSearchCV(estimator=selected_clf, param_grid=param_grid, scoring='accuracy', cv=5, n_jobs=jobs)
+                grid_cv.fit(x_train, y_train)
+                clf_model = grid_cv.best_estimator_
+
+                clf_model.fit(x_train, y_train)
+                y_pred = clf_model.predict(x_test)
+            elif i == 'MLP':
+                selected_clf = MLPClassifier(max_iter=10000, random_state=0)
+
+                param_grid = {
+                    'hidden_layer_sizes': [(10, 10), (20, 20), (50, 50), (80, 80), (100, 100)],
+                    'activation': ['tanh', 'relu'],
+                    'solver': ['sgd', 'adam'],
+                    'alpha': [0.0001, 0.0],
+                    'learning_rate': ['constant', 'adaptive'],
+                }
+
+                grid_cv = GridSearchCV(estimator=selected_clf, param_grid=param_grid, scoring='accuracy', cv=5, n_jobs=jobs)
+                grid_cv.fit(x_train, y_train)
+                clf_model = grid_cv.best_estimator_
+
+                clf_model.fit(x_train, y_train)
+                y_pred = clf_model.predict(x_test)
+
+            acc_val, specificity_val, recall_val, roc_auc_val = compute_classification_prestations(y_test, y_pred)
+            df_acc[i].iloc[idx] = acc_val
+            df_recall[i].iloc[idx] = recall_val
+            df_roc[i].iloc[idx] = roc_auc_val
+            df_spec[i].iloc[idx] = specificity_val
 
     acc = df_acc.mean().tolist()
     acc_std = df_acc.std().tolist()

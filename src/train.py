@@ -23,7 +23,7 @@ coloredlogs.install(level='DEBUG', logger=logger)
 
 def parse_arguments(parser):
     parser.add_argument('--type_data', default='unimodal', type=str)
-    parser.add_argument('--type_modality', default='tabular', type=str)
+    parser.add_argument('--type_modality', default='text', type=str)
     parser.add_argument('--type_fusion', default='early', type=str)
     parser.add_argument('--preprocessing_data', default=False, type=bool)
     return parser.parse_args()

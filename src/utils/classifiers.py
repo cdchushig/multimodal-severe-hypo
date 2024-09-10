@@ -28,7 +28,7 @@ def train_compute_metrics(classifier: str,
                           seed: int,
                           partitions=False,
                           SHAP=False,
-                          ALE=False
+                          obtain_model = True
                           ):
 
     selected_clf = None
@@ -101,7 +101,7 @@ def train_compute_metrics(classifier: str,
             'hidden_layer_sizes': [(10, 10), (20, 20), (50, 50), (80, 80), (100, 100)],
             'activation': ['tanh', 'relu'],
             'solver': ['sgd', 'adam'],
-            'alpha': [0.0001, 0.01,0.001, 0.1],
+            'alpha': [0.0001, 0.0],
             'learning_rate': ['constant', 'adaptive'],
         }
 
@@ -119,7 +119,7 @@ def train_compute_metrics(classifier: str,
         }
         # 'min_samples_split': range(lenght_15_percent_val, lenght_20_percent_val)}
 
-    return train_predict_clf(x_train, y_train, x_test, y_test, selected_clf, param_grid,partitions,SHAP=SHAP,ALE=ALE,
+    return train_predict_clf(x_train, y_train, x_test, y_test, selected_clf, param_grid,partitions,SHAP=SHAP,obtain_model =obtain_model,
                              model_name= classifier)
 
 
@@ -130,7 +130,7 @@ def train_predict_clf(x_train: np.array,
                       clf, param_grid,
                       Partitions,
                       SHAP=False,
-                      ALE=False,
+                      obtain_model = False,
                       model_name='knn') -> Tuple[float, float, float, float]:
 
     print(clf)
@@ -200,7 +200,7 @@ def train_predict_clf(x_train: np.array,
         # pickle.dump(explainer, open(str(path_shap_exp), 'wb'))
 
         return shap_values[1]
-    elif ALE:
+    elif obtain_model:
         return best_clf
     else:
         for i in range(len(y_pred_test)):
