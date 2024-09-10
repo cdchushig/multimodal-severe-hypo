@@ -18,14 +18,14 @@ def conditions_unimodal():
     # Embeddings(Database=df, var_name='medcon1', classifier=['knn'], metrics=['70'], encoding=['Longformer'], Reduction_model='KPCA', path=path1, FS=False)
     # Embeddings(Database=df, var_name='medcon1', classifier=['lasso'], metrics=['50'], encoding=['Clinical'], Reduction_model='PCA', path=path1, FS=False)
 
-    Embeddings(Database=df, var_name='medcon1', classifier=['knn','reglog','MLP'], metrics=[10,30,50,70,100], encoding=['Longformer','Clinical'],
+    Embeddings(Database=df, var_name='medcon1', classifier=['TabPFN','DeepTLF','MLP'], metrics=[10,30,50,70,100], encoding=['Longformer','Clinical'],
                Reduction_model='KPCA', path=path1, FS=False)
 
-    Embeddings(Database=df, var_name='medcon1', classifier=['knn', 'reglog','MLP'], metrics=[10, 30, 50, 70, 100],
+    Embeddings(Database=df, var_name='medcon1', classifier=['TabPFN', 'DeepTLF','MLP'], metrics=[10, 30, 50, 70, 100],
                encoding=['Longformer', 'Clinical'],
                Reduction_model='PCA', path=path1, FS=False)
 
-    Embeddings(Database=df, var_name='medcon1', classifier=['knn', 'reglog','MLP'], metrics=[10, 30, 50, 70, 100],
+    Embeddings(Database=df, var_name='medcon1', classifier=['TabPFN', 'DeepTLF','MLP'], metrics=[10, 30, 50, 70, 100],
                encoding=['tfidf', 'w2vec'], path=path1, FS=False)
 
 
@@ -47,12 +47,12 @@ def medications_unimodal():
     ## Medications with FS
     # Embeddings(Database=df, var_name='medications3',classifier= ['knn'], metrics=['10'], encoding=['Clinical'], Reduction_model='PCA', path=path1, FS=2)
 
-    Embeddings(Database=df, var_name='medications3', classifier=['knn','reglog','MLP'], metrics=[10,30,50,70,100], encoding=['Longformer','Clinical'],
+    Embeddings(Database=df, var_name='medications3', classifier=['TabPFN','DeepTLF','MLP'], metrics=[10,30,50,70,100], encoding=['Longformer','Clinical'],
                Reduction_model='KPCA', path=path1, FS=False)
 
-    Embeddings(Database=df, var_name='medications3', classifier=['knn', 'reglog','MLP'], metrics=[10, 30, 50, 70, 100],
+    Embeddings(Database=df, var_name='medications3', classifier=['TabPFN', 'DeepTLF','MLP'], metrics=[10, 30, 50, 70, 100],
                encoding=['Longformer', 'Clinical'],
                Reduction_model='PCA', path=path1, FS=False)
 
-    Embeddings(Database=df, var_name='medications3', classifier=['knn', 'reglog','MLP'], metrics=[10, 30, 50, 70, 100],
+    Embeddings(Database=df, var_name='medications3', classifier=['TabPFN', 'DeepTLF','MLP'], metrics=[10, 30, 50, 70, 100],
                encoding=['tfidf', 'w2vec'], path=path1, FS=False)
