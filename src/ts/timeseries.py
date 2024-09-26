@@ -343,6 +343,65 @@ def preprocess_cgm_new_freq(df_ts: pd.DataFrame, df_selected_seqs: pd.DataFrame,
 # # plot_glucose_patients(df_ts, flag_save_figure=True)
 #
 
+def count_nan(df):
+    ids = set(df['patient_id'])
+    nan_list = []
+    len_nan=[]
+    for id in ids:
+        cgm = df[df['patient_id'] == id]
+        cgm_val = cgm['mean']
+        time = pd.to_datetime(cgm.new)
+        cgm_val.index = time
+        cgm_val = cgm_val.resample('10T').mean()
+        nan = cgm_val.isna().sum()
+        max_nans = cgm_val.isna().astype(int).groupby(cgm_val.notna().cumsum()).sum().max()
+        nan_list.append(nan*100/720)
+        len_nan.append(max_nans)
+
+
+    plt.figure(figsize=(10, 6))
+    plt.hist(len_nan, edgecolor='black', alpha=0.7, bins= 25)
+
+    # Añadir título y etiquetas
+    plt.title('Histogram of the maximum consecutive missing values per individual.', fontsize=18)
+    plt.xlabel('Maximum number of consecutive missing values', fontsize=16)
+    plt.ylabel('Number of individuals', fontsize=16)
+
+    # Mostrar el gráfico
+    plt.grid(True)
+    plt.xlim(0,90)
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
+    plt.tight_layout()
+    plt.savefig(
+        os.path.join(
+            consts.PATH_PROJECT_FIGURES,
+            'hist_nan_consecutive.png')
+        )
+
+
+    plt.figure(figsize=(10, 6))
+    plt.hist(nan_list, edgecolor='black', alpha=0.7, bins= 20)
+
+    # Añadir título y etiquetas
+    plt.title('Histogram of the number of missing values per individual.', fontsize=18)
+    plt.xlabel('Percentage of missing values', fontsize=16)
+    plt.ylabel('Number of individuals', fontsize=16)
+
+    # Mostrar el gráfico
+    plt.grid(True)
+    plt.xlim(0,30)
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
+    plt.tight_layout()
+    plt.savefig(
+        os.path.join(
+            consts.PATH_PROJECT_FIGURES,
+            'hist_nan') )
+
+
+
+
 
 def CGM_preprocessing():
     df1, df2 = preprocess_raw_cgm()
@@ -374,6 +433,8 @@ def CGM_preprocessing():
 
     df_final = df_final[~df_final['patient_id'].isin(id_removed)]
     df_final.to_csv(os.path.join(consts.PATH_PROJECT_DATA_PREPROCESSED_SIGNAL, 'Time_series_CGM.csv'))
+
+
 # print(df_concat)
 
 # print(df_ts_post)

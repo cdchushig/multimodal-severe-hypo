@@ -15,6 +15,7 @@ def compute_classification_prestations(y_true: np.array, y_pred: np.array) -> (f
     matrix = pd.crosstab(y_true, y_pred, rownames=['Real'], colnames=['Predicted'], margins=True)
     tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
 
+
     acc_val = accuracy_score(y_true, y_pred)
     specificity_val = tn / (tn + fp)
     recall_val = recall_score(y_true, y_pred)
@@ -24,7 +25,7 @@ def compute_classification_prestations(y_true: np.array, y_pred: np.array) -> (f
     roc_auc = auc(fpr, tpr)
     # plot_auroc(fpr, tpr, roc_auc)
 
-    return acc_val, specificity_val, recall_val, roc_auc_val
+    return acc_val, specificity_val, recall_val, roc_auc_val, matrix
 
 
 def split_data(data: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame, np.array]:

@@ -10,6 +10,11 @@ from PyALE import ale
 import math
 import dice_ml
 
+
+continuous_features = ['medications3_2', 'medications3_0', 'cde', 'dee', 'edd', 'hgg', 'fgf', 'bbc', 'dcc', 'bcd',
+'GrPegNonTotTime', 'TrailMakBTotTime', 'GrPegDomTotTime', 'TrailMakATotTime', 'FrailtyFirstWalkTotTimeSec',
+'SymbDigOTotCorr','SymbDigWTotCorr', 'BGVisit2', 'DukeSocSatScore', 'FrailtySecWalkTotTimeSec']
+
 def call_clf_interpretability_SHAP(train_databases, test_databases,
                 clfs, features=[],SHAP='Kernel',seeds=36,path=consts.PATH_PROJECT_FUSION_FIGURES):
 
@@ -86,7 +91,7 @@ def train_interpretability_cnf(clf_name, train_databases, test_databases):
         features = list(df_train.drop('label', axis=1).columns.values)
         data_dice = dice_ml.Data(dataframe=df_train,
                                 # # For perturbation strategy
-                                continuous_features=features,
+                                continuous_features=continuous_features,
                                 outcome_name='label')
 
         model = train_compute_metrics(clf_name, df_train.drop('label', axis=1), df_train['label'],
@@ -114,7 +119,7 @@ def train_interpretability_cnf(clf_name, train_databases, test_databases):
 
                 print(input_datapoint)
                 cf = explainer.generate_counterfactuals(input_datapoint_aux,
-                                                        total_CFs=1,
+                                                        total_CFs=5,
                                                         desired_class="opposite")
 
                 # Visualize it
@@ -139,7 +144,7 @@ def train_interpretability_cnf(clf_name, train_databases, test_databases):
 
 
 
-def train_interpretability_SHAP(clf_name, train_databases, test_databases, features,SHAP=False):
+def train_interpretability_SHAP(clf_name, train_databases, test_databases, features, SHAP=False):
     SHAP_list=[]
     if SHAP == 'Kernel':
         for i, j in enumerate(train_databases):

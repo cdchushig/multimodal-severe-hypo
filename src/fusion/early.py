@@ -116,7 +116,7 @@ def Preprocessing_function(x_features, y_label,i,names,test_s,tfidf):
             X_test.drop(['DangersHighBG'], axis=1, inplace=True) 
 
 
-            Cat=['DealHypoEp_Agree','DealHypoEp_Disagree','DealHypoEp_Neutral', 'UndertreatHypo_Agree','UndertreatHypo_Disagree','UndertreatHypo_Neutral','HighBGDamage_Agree','HighBGDamage_Disagree','HighBGDamage_Neutral','FreqHypoDamage_Agree','FreqHypoDamage_Disagree','FreqHypoDamage_Neutral','DangersHighBG_Agree','DangersHighBG_Disagree','DangersHighBG_Neutral']
+            Cat=['DealHypoEp_Agree','DealHypoEp_Disagree','DealHypoEp_Neutral', 'UndertreatHypo_Agree','UndertreatHypo_Disagree','UndertreatHypo_Neutral','HighBGDamage_Agree','HighBGDamage_Disagree','HighBGDamage_Neutral','FreqHypoDamage_Agree','FreqHypoDamage_Disagree','FreqHypoDamage_Neutral','DangersHighBG_Agree','DangersHighBG_Disagree','DangersHighBG0_Neutral']
             
             
             scaling_df_x_train=pd.concat([scaling_df_x_train,X_train.drop(Cat,axis=1).reset_index(drop=True)],axis='columns')
@@ -660,7 +660,7 @@ def early_fusion(databases_list, partition=0.2, FS=[]):
     train = [df_train1, df_train2, df_train3, df_train4, df_train5]
     test = [df_test1, df_test2, df_test3, df_test4, df_test5]
     return train, test
-list_clfs = ['RandomForest', 'knn', 'dt', 'svm', 'reglog', 'lasso']
+list_clfs = ['knn']
 def classifier_early(train, test, clfs=list_clfs, FS=False,save_path=consts.PATH_PROJECT_FUSION_METRICS):
     if FS==True:
         df_score= relief_fusion(train,len(train[0].columns)-1)

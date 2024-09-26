@@ -163,8 +163,10 @@ def Average_classfier(df,features=[]):
         for i in range(len(X)):
             y_pred.append(X.iloc[i].mode()[0])
 
-        acc_val, specificity_val, recall_val, roc_auc_val = compute_classification_prestations(y_test, y_pred)
+        acc_val, specificity_val, recall_val, roc_auc_val, matrix = compute_classification_prestations(y_test, y_pred)
 
+        matrix.to_csv(os.path.join(consts.PATH_PROJECT_MATRIX,
+                                   f'matrix_late_features_{len(X.columns)}_seed_{j}.csv'))
         df_evaluation['ACC'].iloc[j] = np.round(acc_val, 3)
         df_evaluation['REC'].iloc[j] = np.round(recall_val, 3)
         df_evaluation['ROC'].iloc[j] = np.round(roc_auc_val, 3)

@@ -19,8 +19,7 @@ import warnings
 from sklearn.neural_network import MLPClassifier
 from tabpfn import TabPFNClassifier
 warnings.filterwarnings('ignore')
-list_clfs = ['TabPFN', 'MLP']
-
+list_clfs = ['knn', 'svm', 'dt', 'reglog', 'lasso', 'DeepTLF', 'TabPFN', 'MLP', 'RandomForest']
 
 def train_compute_metrics(classifier: str,
                           x_train: np.array, y_train: np.array,
@@ -28,7 +27,8 @@ def train_compute_metrics(classifier: str,
                           seed: int,
                           partitions=False,
                           SHAP=False,
-                          obtain_model = True
+                          obtain_model = False,
+                          bbdd_name = None
                           ):
 
     selected_clf = None
@@ -87,7 +87,7 @@ def train_compute_metrics(classifier: str,
             'n_layers' : [3,5,8]
         }
     elif classifier == 'TabPFN':
-        selected_clf = TabPFNClassifier(no_preprocess_mode = True, device='cuda', seed=seed)
+        selected_clf = TabPFNClassifier(no_preprocess_mode = True, device='cpu', seed=seed)
 
         param_grid = {
             'N_ensemble_configurations' : [20,30,40, 50],
@@ -101,7 +101,7 @@ def train_compute_metrics(classifier: str,
             'hidden_layer_sizes': [(10, 10), (20, 20), (50, 50), (80, 80), (100, 100)],
             'activation': ['tanh', 'relu'],
             'solver': ['sgd', 'adam'],
-            'alpha': [0.0001, 0.0],
+            'alpha': [0.0001, 0.001, 0.01, 0.1],
             'learning_rate': ['constant', 'adaptive'],
         }
 
@@ -120,7 +120,7 @@ def train_compute_metrics(classifier: str,
         # 'min_samples_split': range(lenght_15_percent_val, lenght_20_percent_val)}
 
     return train_predict_clf(x_train, y_train, x_test, y_test, selected_clf, param_grid,partitions,SHAP=SHAP,obtain_model =obtain_model,
-                             model_name= classifier)
+                             model_name= classifier, bbdd_name= bbdd_name, seed = seed)
 
 
 def train_predict_clf(x_train: np.array,
@@ -131,7 +131,8 @@ def train_predict_clf(x_train: np.array,
                       Partitions,
                       SHAP=False,
                       obtain_model = False,
-                      model_name='knn') -> Tuple[float, float, float, float]:
+                      model_name='knn',
+                      bbdd_name = None, seed = 0) -> Tuple[float, float, float, float]:
 
     print(clf)
     print(param_grid)
@@ -139,6 +140,7 @@ def train_predict_clf(x_train: np.array,
         n_jobs = 1
     else:
         n_jobs = 30
+    print(len(x_train.columns))
     grid_cv = GridSearchCV(clf, param_grid=param_grid, scoring='accuracy', cv=5, n_jobs=n_jobs)
     grid_cv.fit(np.asarray(x_train), np.asarray(y_train))
     # plot_grid(param_grid['n_neighbors'], auc_knn_all_train, auc_knn_all_val)
@@ -215,7 +217,10 @@ def train_predict_clf(x_train: np.array,
             else:
                 y_pred_train[i] = 0.0
         print('Performance in test: ')
-        acc_val, specificity_val, recall_val, roc_auc_val = compute_classification_prestations(y_test, y_pred_test)
+        acc_val, specificity_val, recall_val, roc_auc_val, matrix = compute_classification_prestations(y_test, y_pred_test)
+        if bbdd_name != None:
+            matrix.to_csv(os.path.join(consts.PATH_PROJECT_MATRIX,
+                                f'matrix_{bbdd_name}_features_{len(x_train.columns)}_seed_{seed}.csv'))
 
         if Partitions:
             return y_pred_test, y_pred_train
@@ -298,10 +303,12 @@ def train_best_clfs(clf_name, x_features, y_label, bbdd_name, features, test_s,t
         x_train_scaled, x_test_scaled, y_train, y_test = preprocessing_function(x_features, y_label, i, bbdd_name, test_s,tfidf)
         if len(features) == len(x_features.columns):
             y_pred_test, y_pred_train = train_compute_metrics(clf_name, x_train_scaled, y_train,
-                                                              x_test_scaled, y_test, i,partitions=True)
+                                                              x_test_scaled, y_test, i,partitions=True,
+                                                              bbdd_name=bbdd_name )
         else:
             y_pred_test, y_pred_train = train_compute_metrics(clf_name, x_train_scaled[features], y_train,
-                                                              x_test_scaled[features], y_test, i,partitions=True)
+                                                              x_test_scaled[features], y_test, i,partitions=True,
+                                                              bbdd_name= bbdd_name)
         list_pred_train.append(y_pred_train)
         list_pred_test.append(y_pred_test)
         list_y_test.append(y_test)
@@ -332,10 +339,12 @@ def train_several_clfs_fusion(clf_name, train_databases, test_databases, feature
         if len(features) == 0:
 
             acc_val, specificity_val, recall_val, roc_auc_val = train_compute_metrics(clf_name, x_train, y_train,
-                                                                               x_test, y_test,seed=SEEDS[i],SHAP=SHAP)
+                                                                               x_test, y_test,seed=SEEDS[i],SHAP=SHAP,
+                                                                                    bbdd_name= 'early')
         else:
             acc_val, specificity_val, recall_val, roc_auc_val = train_compute_metrics(clf_name, x_train[features],
-                                                                                      y_train, x_test[features], y_test,seed=SEEDS[i],SHAP=SHAP)
+                                                                                      y_train, x_test[features],
+                                                                    y_test,seed=SEEDS[i],SHAP=SHAP, bbdd_name= 'early')
 
         list_acc.append(acc_val)
         list_specificity.append(specificity_val)
@@ -365,7 +374,7 @@ def train_several_clfs_fusion(clf_name, train_databases, test_databases, feature
 
 
 def call_models_fusion(train_databases, test_databases,
-                list_clfs=['RandomForest', 'knn', 'dt', 'svm', 'reglog', 'lasso'], features=[],SHAP=False):
+                list_clfs=['knn', 'svm', 'dt', 'reglog', 'lasso', 'DeepTLF', 'TabPFN', 'MLP', 'RandomForest'], features=[],SHAP=False):
     df_metrics = pd.DataFrame(columns=['model', 'metric', 'mean', 'std'])
 
     for clf_name in list_clfs:

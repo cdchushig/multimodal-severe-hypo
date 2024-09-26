@@ -6,6 +6,11 @@ import matplotlib
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
+import re
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+
 def plot_auroc(fpr, tpr, roc_auc):
     plt.title('Receiver Operating Characteristic')
     plt.plot(fpr, tpr, 'b', label='AUC = %0.2f' % roc_auc)
@@ -16,6 +21,98 @@ def plot_auroc(fpr, tpr, roc_auc):
     plt.ylabel('True Positive Rate')
     plt.xlabel('False Positive Rate')
     plt.show()
+
+def matrix_concat_plot():
+    file_names = [ 'Unaware', 'Fear', 'Medications', 'Signal', 'BTOTSCORE', 'Conditions', 'MOCA', 'Lifestyle', 'BSample',
+                      'Attitude', 'Depression']
+    FS_list = [9, 7, 2, 8, 11, 3, 4, 6, 4, 5, 4]
+    folder_path = os.path.join(consts.PATH_PROJECT_REPORTS, 'confussion_matrix')
+    for i, file_name in enumerate(file_names):
+        print(file_name)
+        names = [f for f in os.listdir(folder_path) if file_name in f]
+        names_FS = [item for item in names if re.search(r'features_'+str(FS_list[i]), item)]
+        names_noFS= list(set(names)- set(names_FS))
+        df_noFS = pd.DataFrame([[0]*3]*3, columns=['0.0','1.0', 'All'], index = ['0','1', 'All'])
+        if 'BSample' != file_name:
+            for name in names_noFS:
+                df_aux= pd.read_csv(os.path.join(folder_path, name), index_col=0)
+                df_aux.columns= ['0.0','1.0', 'All']
+                df_aux.index =['0','1', 'All']
+                df_noFS = df_noFS+df_aux
+
+            matrix_plot(df_noFS/5,file_name)
+
+        df_FS = pd.DataFrame([[0] * 3] * 3, columns=['0.0', '1.0', 'All'], index=['0', '1', 'All'])
+        for name in names_FS:
+            df_aux = pd.read_csv(os.path.join(folder_path, name), index_col=0)
+            df_aux.columns = ['0.0', '1.0', 'All']
+            df_aux.index = ['0', '1', 'All']
+            df_FS = (df_FS + df_aux)
+        matrix_plot(df_FS/5, file_name + '_FS')
+
+    for i, file_name in enumerate(['early', 'late']):
+        print(file_name)
+        names = [f for f in os.listdir(folder_path) if file_name in f]
+        df_noFS = pd.DataFrame([[0] * 3] * 3, columns=['0.0', '1.0', 'All'], index=['0', '1', 'All'])
+        for name in names:
+            df_aux = pd.read_csv(os.path.join(folder_path, name), index_col=0)
+            df_aux.columns = ['0.0', '1.0', 'All']
+            df_aux.index = ['0', '1', 'All']
+            df_noFS = (df_noFS + df_aux)
+        matrix_plot(df_noFS/5, file_name)
+
+
+def matrix_plot(df, name):
+    plt.figure(figsize=(8, 7))
+    ax = plt.subplot()
+    sns.heatmap(df.iloc[0:2,0:2], annot=True, fmt='g', ax=ax, annot_kws={'size': 30}   );  # annot=True to annotate cells, ftm='g' to disable scientific notation
+
+    # labels, title and ticks
+    ax.set_xlabel('Predicted labels', fontsize=24)
+    ax.set_ylabel('True labels', fontsize=24)
+    ax.set_title(name, fontsize=28)
+    ax.tick_params(axis='both', labelsize=24)
+    ax.xaxis.set_ticklabels(['No SH', 'SH'])
+    ax.yaxis.set_ticklabels(['No SH','SH' ])
+    plt.savefig(os.path.join(consts.PATH_PROJECT_REPORTS, 'confussion_matrix','figures',f'matrix_plot_{name}.png' ))
+
+def plot_tabular_score():
+    df = pd.read_excel(os.path.join(consts.PATH_PROJECT_TABULAR_METRICS, 'AUCROC_final.ods'), engine='odf')
+    df_FS = df.iloc[1::2].reset_index(drop=True)
+    df_normal= df.iloc[0::2].reset_index(drop=True)
+    for metric in ['AUCROC','Specificity', 'Sensitivity']:
+
+        valores_1 = df_normal[metric] # Primer conjunto de valores
+        valores_2 = df_FS[metric]  # Segundo conjunto de valores
+        std_1 = df_normal[metric+'_STD']# Desviación estándar para el primer conjunto
+        std_2 = df_FS[metric+'_STD']
+        labels_1 = df_normal.NAME
+        labels_2 = df_FS.NAME
+
+        x = np.arange(len(df_normal.Variable))
+        fig, ax = plt.subplots(figsize=(14, 6))
+
+        ax.errorbar(x - 0.18, valores_1, yerr=std_1, fmt='o', label='Without FS', capsize=5)
+        ax.errorbar(x + 0.2, valores_2, yerr=std_2, fmt='o', label='FS approach', capsize=5)
+
+
+        for i in range(len(x)):
+            ax.text(x[i] - 0.03, valores_1[i]+ 0.05 + std_1[i], labels_1[i], fontsize=14, ha='right', va='top')
+            ax.text(x[i] + 0.03, valores_2[i]+ 0.05 + std_2[i], labels_2[i], fontsize=14, ha='left', va='top')
+            ax.axvline(x[i] +0.5, color='gray', linestyle='--', alpha=0.7)
+
+        ax.set_xticks(x)
+        ax.set_xticklabels(df_normal.Variable)
+        ax.set_xlabel('DATASETS', fontsize=20)
+        ax.set_ylabel(metric, fontsize=20)
+        ax.set_ylim(0.15, 0.95)
+        ax.tick_params(axis='both', which='major', labelsize=17)
+        legend = ax.legend()
+
+        for text in legend.get_texts():
+            text.set_fontsize(18)
+
+        plt.savefig(os.path.join(consts.PATH_PROJECT_TABULAR_METRICS, f'plot_{metric}.pdf'))
 
 
 def plot_grid(k_grid, auc_knn_all_train, auc_knn_all_val):
@@ -323,3 +420,6 @@ def lollipop_plot (x,y,color,name):
     plt.grid(axis='y', ls=':', lw=2, alpha=0.9)
     fig.tight_layout()
     fig.show()
+
+
+matrix_concat_plot()

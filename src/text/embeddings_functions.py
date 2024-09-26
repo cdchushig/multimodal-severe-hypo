@@ -162,7 +162,7 @@ def main_function(df_data, var_name='raw_medcon', encoding='tfidf', classifiers=
                 y_pred = clf_model.predict(np.asarray(x_test))
 
             elif i == 'TabPFN':
-                selected_clf = TabPFNClassifier(no_preprocess_mode=True, device='cuda', seed=0)
+                selected_clf = TabPFNClassifier(no_preprocess_mode=True, device='cpu', seed=0)
 
                 param_grid = {
                     'N_ensemble_configurations': [20, 30, 40, 50],

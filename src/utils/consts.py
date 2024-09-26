@@ -20,6 +20,7 @@ PATH_PROJECT_TEXT_METRICS = Path.joinpath(PATH_PROJECT_DIR, 'reports','text')
 PATH_PROJECT_FS_METRICS = Path.joinpath(PATH_PROJECT_DIR, 'reports','FS')
 PATH_PROJECT_FUSION_METRICS = Path.joinpath(PATH_PROJECT_DIR, 'reports','fusion','metrics')
 PATH_PROJECT_FUSION_FIGURES = Path.joinpath(PATH_PROJECT_DIR, 'reports','fusion','figures')
+PATH_PROJECT_MATRIX = Path.joinpath(PATH_PROJECT_DIR, 'reports','confussion_matrix')
 
 BBDD_HYPO = 'hypo'
 BBDD_ID_HYPO_LIFESTYLE = 'BDemoLifeDiabHxMgmt'
