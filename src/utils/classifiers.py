@@ -19,7 +19,8 @@ import warnings
 from sklearn.neural_network import MLPClassifier
 from tabpfn import TabPFNClassifier
 warnings.filterwarnings('ignore')
-list_clfs = ['knn', 'svm', 'dt', 'reglog', 'lasso', 'DeepTLF', 'TabPFN', 'MLP', 'RandomForest']
+
+list_clfs = ['RandomForest', 'knn', 'svm', 'dt', 'reglog', 'lasso', 'TabPFN', 'MLP', 'DeepTLF' ]
 
 def train_compute_metrics(classifier: str,
                           x_train: np.array, y_train: np.array,
@@ -228,7 +229,7 @@ def train_predict_clf(x_train: np.array,
             return acc_val, specificity_val, recall_val, roc_auc_val
 
 
-def train_several_clfs(clf_name, x_features, y_label,bbdd_name,features,test_s,tfidf):
+def train_several_clfs(clf_name, x_features, y_label,bbdd_name, features, test_s, tfidf):
 
     list_acc = []
     list_specificity = []
@@ -242,7 +243,7 @@ def train_several_clfs(clf_name, x_features, y_label,bbdd_name,features,test_s,t
                                                                                 test_s, tfidf)
 
         
-        if len(features) == len(x_features.columns):
+        if set(features) == set(x_features.columns):
 
             acc_val, specificity_val, recall_val, roc_auc_val = train_compute_metrics(clf_name,
                                                                                       x_train_scaled, y_train,
@@ -372,9 +373,9 @@ def train_several_clfs_fusion(clf_name, train_databases, test_databases, feature
 
     return list_dicts_metrics
 
-
+ # 'DeepTLF', 'TabPFN', 'MLP', 'RandomForest'
 def call_models_fusion(train_databases, test_databases,
-                list_clfs=['knn', 'svm', 'dt', 'reglog', 'lasso', 'DeepTLF', 'TabPFN', 'MLP', 'RandomForest'], features=[],SHAP=False):
+                list_clfs=['knn'], features=[],SHAP=False):
     df_metrics = pd.DataFrame(columns=['model', 'metric', 'mean', 'std'])
 
     for clf_name in list_clfs:

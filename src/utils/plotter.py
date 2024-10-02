@@ -61,6 +61,190 @@ def matrix_concat_plot():
             df_noFS = (df_noFS + df_aux)
         matrix_plot(df_noFS/5, file_name)
 
+def plot_results_AUCROC(modality):
+    tabular_data = ['Unaware', 'Fear', 'BTOTSCORE',  'MOCA', 'Lifestyle', 'BSample', 'Attitude', 'Depression']
+    path_old = os.path.join(consts.PATH_PROJECT_REPORTS, 'metrics_standard')
+    path_new = os.path.join(consts.PATH_PROJECT_REPORTS, 'metrics_new_models')
+    if modality == 'tabular':
+        for name in tabular_data:
+            df_old = pd.read_csv(os.path.join(path_old, 'tabular', 'metrics', f'{name}.csv'), index_col=0)
+            df_new = pd.read_csv(os.path.join(path_new, 'tabular', f'{name}.csv'), index_col=0)
+            df_total = pd.concat([df_old, df_new])
+            df_total_auc = df_total[df_total['metric'] == 'auc_roc']
+            df_total_auc['model'] = df_total_auc['model'].replace({
+                'RandomForest': 'RF',
+                'svm': 'SVM',
+                'dt': 'DT',
+                'REGLOG': 'LR',
+                'lasso': 'LASSO',
+            })
+
+            df_old_fs = pd.read_csv(os.path.join(path_old, 'tabular', 'metrics', f'{name}_FS.csv'), index_col=0)
+            df_new_fs = pd.read_csv(os.path.join(path_new, 'tabular', f'{name}_FS.csv'), index_col=0)
+            df_total_fs = pd.concat([df_old_fs, df_new_fs])
+            df_total_auc_fs = df_total_fs[df_total_fs['metric'] == 'auc_roc']
+
+            df_total_auc_fs['model'] = df_total_auc_fs['model'].replace({
+                'RandomForest': 'RF',
+                'svm': 'SVM',
+                'dt': 'DT',
+                'reglog': 'LR',
+                'lasso': 'LASSO',
+            })
+
+            plot_auc_unimodal_clf(df_total_auc, df_total_auc_fs, name)
+    if modality == 'Time_series':
+        df_old = pd.read_csv(os.path.join(path_old, 'time series', 'Time_series.csv'), index_col=0)
+        df_new = pd.read_csv(os.path.join(path_new, 'time series', 'Time_series.csv'), index_col=0)
+        df_total = pd.concat([df_old, df_new])
+        df_total_auc = df_total[df_total['metric'] == 'auc_roc']
+        df_total_auc['model'] = df_total_auc['model'].replace({
+            'RandomForest': 'RF',
+            'svm': 'SVM',
+            'dt': 'DT',
+            'REGLOG': 'LR',
+            'lasso': 'LASSO',
+            'knn': 'KNN',
+        })
+
+        df_old_fs = pd.read_csv(os.path.join(path_old, 'time series', 'Time_series_FS.csv'), index_col=0)
+        df_new_fs = pd.read_csv(os.path.join(path_new, 'time series', 'Time_series_FS.csv'), index_col=0)
+        df_total_fs = pd.concat([df_old_fs, df_new_fs])
+        df_total_auc_fs = df_total_fs[df_total_fs['metric'] == 'auc_roc']
+
+        df_total_auc_fs['model'] = df_total_auc_fs['model'].replace({
+            'RandomForest': 'RF',
+            'svm': 'SVM',
+            'dt': 'DT',
+            'REGLOG': 'LR',
+            'lasso': 'LASSO',
+        })
+        plot_auc_unimodal_clf(df_total_auc, df_total_auc_fs, 'Time_series')
+
+    if modality == 'Text':
+        for name in ['Medications', 'Conditions']:
+            df_old = pd.read_csv(os.path.join(path_old, 'text',name, f'{name}.csv'), index_col=0)
+            df_new = pd.read_csv(os.path.join(path_new, 'text' ,name, f'{name}.csv'), index_col=0)
+            df_total = pd.concat([df_old, df_new])
+            df_total_auc = df_total[df_total['metric'] == 'auc_roc']
+            df_total_auc['model'] = df_total_auc['model'].replace({
+                'RandomForest': 'RF',
+                'svm': 'SVM',
+                'dt': 'DT',
+                'REGLOG': 'LR',
+                'lasso': 'LASSO',
+                'knn': 'KNN',
+            })
+
+            df_old_fs = pd.read_csv(os.path.join(path_old, 'text',name, f'{name}_FS.csv'), index_col=0)
+            df_new_fs = pd.read_csv(os.path.join(path_new, 'text',name, f'{name}_FS.csv'), index_col=0)
+            df_total_fs = pd.concat([df_old_fs, df_new_fs])
+            df_total_auc_fs = df_total_fs[df_total_fs['metric'] == 'auc_roc']
+
+            df_total_auc_fs['model'] = df_total_auc_fs['model'].replace({
+                'RandomForest': 'RF',
+                'svm': 'SVM',
+                'dt': 'DT',
+                'REGLOG': 'LR',
+                'lasso': 'LASSO',
+            })
+            plot_auc_unimodal_clf(df_total_auc, df_total_auc_fs, name)
+    if modality == 'Fusion':
+        df_old = pd.read_csv(os.path.join(path_old, 'fusion', 'Early_best.csv'), index_col=0)
+        df_new = pd.read_csv(os.path.join(path_new, 'fusion', 'Early_best.csv'), index_col=0)
+        df_total = pd.concat([df_old, df_new])
+        df_total_early = df_total[df_total['metric'] == 'auc_roc']
+        df_total_early['model'] = df_total_early['model'].replace({
+            'RandomForest': 'RF',
+            'svm': 'SVM',
+            'dt': 'DT',
+            'REGLOG': 'LR',
+            'lasso': 'LASSO',
+            'knn': 'KNN',
+        })
+
+        df_old_fs = pd.read_csv(os.path.join(path_old, 'fusion', 'Late_best.csv'), index_col=0)
+        df_new_fs = pd.read_csv(os.path.join(path_new, 'fusion', 'Late_best.csv'), index_col=0)
+        df_total_fs = pd.concat([df_old_fs, df_new_fs])
+        df_total_auc_late = df_total_fs[df_total_fs['metric'] == 'auc_roc']
+
+        df_total_auc_late['model'] = df_total_auc_late['model'].replace({
+            'RandomForest': 'RF',
+            'svm': 'SVM',
+            'dt': 'DT',
+            'REGLOG': 'LR',
+            'lasso': 'LASSO',
+            'knn': 'KNN',
+        })
+        plot_fusion_AUCROC(df_total_early, df_total_auc_late,)
+
+
+
+
+def plot_auc_unimodal_clf(df_total_auc, df_total_auc_fs, name):
+    valores_1 = df_total_auc['mean'].astype(float)  # Primer conjunto de valores
+    valores_2 = df_total_auc_fs['mean'].astype(float)  # Segundo conjunto de valores
+    std_1 = df_total_auc['std'].astype(float)  # Desviación estándar para el primer conjunto
+    std_2 = df_total_auc_fs['std'].astype(float)
+    labels_1 = df_total_auc.model
+    labels_2 = df_total_auc_fs.model
+
+    x = np.arange(len(df_total_auc.model))
+    fig, ax = plt.subplots(figsize=(14, 6))
+
+    ax.errorbar(x - 0.18, valores_1, yerr=std_1, fmt='o', label='Without FS', capsize=5)
+    ax.errorbar(x + 0.2, valores_2, yerr=std_2, fmt='o', label='With FS', capsize=5)
+
+    for i in range(len(x)):
+        # ax.text(x[i] - 0.03, valores_1[i] + 0.05 + std_1[i], labels_1[i], fontsize=14, ha='right', va='top')
+        # ax.text(x[i] + 0.03, valores_2[i] + 0.05 + std_2[i], labels_2[i], fontsize=14, ha='left', va='top')
+        ax.axvline(x[i] + 0.5, color='gray', linestyle='--', alpha=0.7)
+
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels_1)
+    ax.set_xlabel('MODELS', fontsize=20)
+    ax.set_ylabel('AUCROC', fontsize=20)
+    ax.set_ylim(0.15, 0.95)
+    ax.tick_params(axis='both', which='major', labelsize=17)
+    legend = ax.legend()
+
+    for text in legend.get_texts():
+        text.set_fontsize(18)
+
+    plt.savefig(os.path.join(consts.PATH_PROJECT_FIGURES, f'plot_AUCROC_{name}.png'))
+
+
+def plot_fusion_AUCROC(df_early,df_late):
+    valores_1 = df_early['mean'].astype(float)  # Primer conjunto de valores
+    valores_2 = df_late['mean'].astype(float)  # Segundo conjunto de valores
+    std_1 = df_early['std'].astype(float)  # Desviación estándar para el primer conjunto
+    std_2 = df_late['std'].astype(float)
+    labels_1 = df_early.model
+    labels_2 = df_late.model
+
+    x = np.arange(len(df_early.model))
+    fig, ax = plt.subplots(figsize=(14, 6))
+
+    ax.errorbar(x - 0.18, valores_1, yerr=std_1, fmt='o', label='Early fusion', capsize=5)
+    ax.errorbar(x + 0.2, valores_2, yerr=std_2, fmt='o', label='Late Fusion', capsize=5)
+
+    for i in range(len(x)):
+        # ax.text(x[i] - 0.03, valores_1[i] + 0.05 + std_1[i], labels_1[i], fontsize=14, ha='right', va='top')
+        # ax.text(x[i] + 0.03, valores_2[i] + 0.05 + std_2[i], labels_2[i], fontsize=14, ha='left', va='top')
+        ax.axvline(x[i] + 0.5, color='gray', linestyle='--', alpha=0.7)
+
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels_1)
+    ax.set_xlabel('MODELS', fontsize=20)
+    ax.set_ylabel('AUCROC', fontsize=20)
+    ax.set_ylim(0.15, 0.95)
+    ax.tick_params(axis='both', which='major', labelsize=17)
+    legend = ax.legend()
+
+    for text in legend.get_texts():
+        text.set_fontsize(18)
+
+    plt.savefig(os.path.join(consts.PATH_PROJECT_FIGURES, f'plot_AUCROC_fusion.png'))
 
 def matrix_plot(df, name):
     plt.figure(figsize=(8, 7))
@@ -422,4 +606,4 @@ def lollipop_plot (x,y,color,name):
     fig.show()
 
 
-matrix_concat_plot()
+# matrix_concat_plot()

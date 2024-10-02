@@ -26,6 +26,7 @@ def parse_arguments(parser):
     parser.add_argument('--type_modality', default='time_series', type=str)
     parser.add_argument('--type_fusion', default='early', type=str)
     parser.add_argument('--preprocessing_data', default=False, type=bool)
+    parser.add_argument('--gender', default='Female', type=str)
     return parser.parse_args()
 
 
@@ -40,10 +41,10 @@ if args.type_data == 'unimodal':
         databases_list = ['Unaware', 'Fear', 'BTOTSCORE', 'MOCA', 'Lifestyle',
                           'BSample', 'Attitude', 'Depression']
 
-        FS = [9, 7, 2, 8, 11, 3, 4, 6, 4, 5, 4]
+        FS = [9, 7, 11, 4, 6, 4, 5, 4 ]
 
-        # tabular_classification(databases_list, paths=consts.PATH_PROJECT_TABULAR_METRICS)
-        tabular_classification(databases_list, features_selected=FS, paths=consts.PATH_PROJECT_TABULAR_METRICS)
+        tabular_classification(databases_list, paths=consts.PATH_PROJECT_TABULAR_METRICS)
+        # tabular_classification(databases_list, features_selected=FS, paths=consts.PATH_PROJECT_TABULAR_METRICS)
 
     elif args.type_modality == 'time_series':
 
@@ -53,6 +54,7 @@ if args.type_data == 'unimodal':
         gSAX_application(df, [6], [3], [10], [10])
         data_final = pd.read_csv(os.path.join(consts.PATH_PROJECT_DATA_PREPROCESSED_SIGNAL, 'gSAX.csv'))
         Signal_FS(data_final)
+
     elif args.type_modality == 'text':
         # obtain results using medical conditions
         conditions_unimodal()
@@ -62,7 +64,8 @@ if args.type_data == 'unimodal':
 # Models using multimodal data
 elif args.type_data == 'multimodal':
     if args.type_fusion == 'early': # early fusion
-        early_fusion_approaches()
+        early_fusion_approaches(args.gender)
+
 
     elif args.type_fusion == 'late': # late fusion
         late_train_test_creation()

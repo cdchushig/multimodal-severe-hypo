@@ -6,58 +6,75 @@ from fusion.early import early_fusion, classifier_early
 import utils.consts as consts
 import numpy as np
 
-def early_fusion_approaches():
-    # ### EARLY FUSION###
-    # print('** EARLY FUSION **')
-    databases_list = ['Unaware', 'Fear', 'Medications', 'Signal', 'BTOTSCORE', 'Conditions', 'MOCA', 'Lifestyle', 'BSample',
-                      'Attitude', 'Depression']
-    train, test = early_fusion(databases_list, partition=0.2)
-    classifier_early(train, test)
+def early_fusion_approaches(gender = 'global'):
+    if gender != 'global':
+        databases_list = ['Unaware', 'Fear', 'Medications', 'Signal', 'BTOTSCORE', 'Conditions', 'MOCA', 'Lifestyle',
+                          'BSample',
+                          'Attitude', 'Depression']
+        FS_list = [9, 7, 2, 8, 11, 3, 4, 6, 4, 5, 4]
+        train, test = early_fusion(databases_list[0:5], partition=0.2, FS=FS_list[0:5], gender = gender)
 
-    ### EARLY FUSION Pre FS###
-    print('** EARLY FUSION Pre FS**')
+        if gender == 'Male':
+            classifier_early(train, test, save_path = consts.PATH_PROJECT_FUSION_METRICS_GENDER_MALE)
+            u = call_clf_interpretability_SHAP(train, test, 'knn',path=consts.PATH_PROJECT_FUSION_METRICS_GENDER_MALE)
+        else:
+            classifier_early(train, test, save_path=consts.PATH_PROJECT_FUSION_METRICS_GENDER_FEMALE )
+            u = call_clf_interpretability_SHAP(train, test, 'knn', path=consts.PATH_PROJECT_FUSION_METRICS_GENDER_FEMALE)
 
-    FS_list = [9, 7, 2, 8, 11, 3, 4, 6, 4, 5, 4]
-    train, test = early_fusion(databases_list, partition=0.2, FS=FS_list)
-    classifier_early(train, test)
 
-    ### EARLY FUSION Post FS###
-    print('** EARLY FUSION Post FS** ')
+    else:
 
-    train, test = early_fusion(databases_list, partition=0.2)
-    classifier_early(train, test, FS=18)
-
-    ### EARLY FUSION Double###
-    print('** EARLY FUSION Double**')
-
-    FS_list = [9, 7, 2, 8, 11, 3, 4, 6, 4, 5, 4]
-    train, test = early_fusion(databases_list, partition=0.2, FS=FS_list)
-    df1 = classifier_early(train, test, FS=25)
-
-    ###EARLY FUSION IA###
-    print('** EARLY FUSION IA **')
-    databases_list = ['Unaware', 'Fear', 'Medications', 'Signal', 'BTOTSCORE', 'Conditions', 'MOCA', 'Lifestyle']
-    for e in range(2, len(databases_list) + 1):
-        train, test = early_fusion(databases_list[0:e], partition=0.2)
+        # ### EARLY FUSION###
+        # print('** EARLY FUSION **')
+        databases_list = ['Unaware', 'Fear', 'Medications', 'Signal', 'BTOTSCORE', 'Conditions', 'MOCA', 'Lifestyle', 'BSample',
+                          'Attitude', 'Depression']
+        train, test = early_fusion(databases_list, partition=0.2)
         classifier_early(train, test)
 
-    # ### EARLY-IA-POST-FS ###
-    print('** EARLY FUSION IA-Fs-Post**')
-    FS_list = [16, 18, 18, 40, 22, 23, 23]
-    for e in range(2, len(databases_list) + 1):
-        train, test = early_fusion(databases_list[0:e], partition=0.2)
-        classifier_early(train, test, FS=FS_list[e - 2])
+        ### EARLY FUSION Pre FS###
+        print('** EARLY FUSION Pre FS**')
 
-    ###EARLY-IA-PRE-FS###
-    print('** EARLY FUSION IA-PRE-FS**')
-    FS_list = [9, 7, 2, 8, 11, 3, 4, 6, 4, 5, 4]
-    for e in range(2, len(databases_list) + 1):
-        train, test = early_fusion(databases_list[0:e], partition=0.2, FS=FS_list[0:e])
-        if e== 5:
-            u = call_clf_interpretability_SHAP(train, test, 'knn')
-            u = call_cf_interpretability_cnf(train, test, 'knn')
+        FS_list = [9, 7, 2, 8, 11, 3, 4, 6, 4, 5, 4]
+        train, test = early_fusion(databases_list, partition=0.2, FS=FS_list)
         classifier_early(train, test)
-        break
+
+        ### EARLY FUSION Post FS###
+        print('** EARLY FUSION Post FS** ')
+
+        train, test = early_fusion(databases_list, partition=0.2)
+        classifier_early(train, test, FS=18)
+
+        ### EARLY FUSION Double###
+        print('** EARLY FUSION Double**')
+
+        FS_list = [9, 7, 2, 8, 11, 3, 4, 6, 4, 5, 4]
+        train, test = early_fusion(databases_list, partition=0.2, FS=FS_list)
+        df1 = classifier_early(train, test, FS=25)
+
+        ###EARLY FUSION IA###
+        print('** EARLY FUSION IA **')
+        databases_list = ['Unaware', 'Fear', 'Medications', 'Signal', 'BTOTSCORE', 'Conditions', 'MOCA', 'Lifestyle']
+        for e in range(2, len(databases_list) + 1):
+            train, test = early_fusion(databases_list[0:e], partition=0.2)
+            classifier_early(train, test)
+
+        # ### EARLY-IA-POST-FS ###
+        print('** EARLY FUSION IA-Fs-Post**')
+        FS_list = [16, 18, 18, 40, 22, 23, 23]
+        for e in range(2, len(databases_list) + 1):
+            train, test = early_fusion(databases_list[0:e], partition=0.2)
+            classifier_early(train, test, FS=FS_list[e - 2])
+
+        ###EARLY-IA-PRE-FS###
+        print('** EARLY FUSION IA-PRE-FS**')
+        FS_list = [9, 7, 2, 8, 11, 3, 4, 6, 4, 5, 4]
+        for e in range(2, len(databases_list) + 1):
+            train, test = early_fusion(databases_list[0:e], partition=0.2, FS=FS_list[0:e])
+            if e== 5:
+                u = call_clf_interpretability_SHAP(train, test, 'knn')
+                u = call_cf_interpretability_cnf(train, test, 'knn')
+            classifier_early(train, test)
+            break
 
 
 ### LATE FUSION  CREATION TRAIN TEST###

@@ -16,14 +16,23 @@ from utils.check_patients import get_patients_id
 import utils.consts as consts
 from  utils.FS_relief import relief_fusion
 import math
-def main_early_fusion(x_features, y_label, names, test_s,tfidf=10):
+def main_early_fusion(x_features, y_label, names, test_s, tfidf=10, gender_positions=[]):
     list_x_train = []
     list_x_test = []
     list_y_train = []
     list_y_test = []
 
     for i in consts.SEEDS:
-        x_train, x_test,Y_train, Y_test = Preprocessing_function(x_features, y_label,i,names,test_s,tfidf)
+        train_index, test_index =train_test_split(x_features[0].index, stratify=y_label, random_state=i, test_size=test_s)
+        x_train, x_test,Y_train, Y_test = Preprocessing_function(x_features, y_label, i, names, test_s, tfidf)
+        if len(gender_positions) != 0:
+            x_train.index= train_index
+            x_test.index = test_index
+            x_train = x_train.iloc[x_train.index.isin(gender_positions)]
+            x_test = x_test.iloc[x_test.index.isin(gender_positions)]
+            x_train = x_train.reset_index(drop = True)
+            x_test = x_test.reset_index(drop=True)
+
         list_x_train.append(x_train)
         list_x_test.append(x_test)
         list_y_test.append(Y_test)
@@ -32,7 +41,7 @@ def main_early_fusion(x_features, y_label, names, test_s,tfidf=10):
     return list_x_train,list_x_test,list_y_train,list_y_test
     
     
-def Preprocessing_function(x_features, y_label,i,names,test_s,tfidf):
+def Preprocessing_function(x_features, y_label, i, names, test_s, tfidf):
     def var_categ_train(variable,X_train):
         
           data= X_train
@@ -503,10 +512,27 @@ def Preprocessing_function(x_features, y_label,i,names,test_s,tfidf):
             X_test=pd.concat([X_test[features3],test1[features2]],axis=1)
             X_train=X_train.drop(['Unnamed: 0'],axis=1)
             X_test=X_test.drop(['Unnamed: 0'],axis=1)
-            scaling_df_x_train=pd.concat([scaling_df_x_train,X_train.drop(Cat,axis=1).reset_index(drop=True)],axis='columns')
-            no_scaling_df_x_train=pd.concat([no_scaling_df_x_train,X_train[Cat].reset_index(drop=True)],axis='columns')
-            scaling_df_x_test=pd.concat([scaling_df_x_test,X_test.drop(Cat,axis=1).reset_index(drop=True)],axis='columns')
-            no_scaling_df_x_test=pd.concat([no_scaling_df_x_test,X_test[Cat].reset_index(drop=True)],axis='columns')
+            try:
+                scaling_df_x_train=pd.concat([scaling_df_x_train,X_train.drop(Cat,axis=1).reset_index(drop=True)],axis='columns')
+                no_scaling_df_x_train=pd.concat([no_scaling_df_x_train,X_train[Cat].reset_index(drop=True)],axis='columns')
+                scaling_df_x_test=pd.concat([scaling_df_x_test,X_test.drop(Cat,axis=1).reset_index(drop=True)],axis='columns')
+                no_scaling_df_x_test=pd.concat([no_scaling_df_x_test,X_test[Cat].reset_index(drop=True)],axis='columns')
+            except KeyError :
+
+                Cat = ['GrPegDomHand', 'ReadCardCorrLens',
+                       'ReadCardLowLine_20/16', 'ReadCardLowLine_20/20',
+                       'ReadCardLowLine_20/25',
+                       'ReadCardLowLine_20/32', 'ReadCardLowLine_20/40',
+                       'ReadCardLowLine_20/50', 'ReadCardLowLine_20/63',
+                       'ReadCardLowLine_20/80']
+                scaling_df_x_train = pd.concat([scaling_df_x_train, X_train.drop(Cat, axis=1).reset_index(drop=True)],
+                                               axis='columns')
+                no_scaling_df_x_train = pd.concat([no_scaling_df_x_train, X_train[Cat].reset_index(drop=True)],
+                                                  axis='columns')
+                scaling_df_x_test = pd.concat([scaling_df_x_test, X_test.drop(Cat, axis=1).reset_index(drop=True)],
+                                              axis='columns')
+                no_scaling_df_x_test = pd.concat([no_scaling_df_x_test, X_test[Cat].reset_index(drop=True)],
+                                                 axis='columns')
             
 
     try:
@@ -528,7 +554,7 @@ def Preprocessing_function(x_features, y_label,i,names,test_s,tfidf):
     return x_train, x_test,Y_train, Y_test
 
 
-def early_fusion(databases_list, partition=0.2, FS=[]):
+def early_fusion(databases_list, partition=0.2, FS=[], gender = 'global'):
     # patients = get_patients_id(databases_list)
     patients = get_patients_id(['Medications','Conditions','Fear','BTOTSCORE','BSample','Attitude', 'Lifestyle', 'MOCA','Depression','Signal','Unaware'])
     z = math.ceil(partition * len(patients))
@@ -608,15 +634,22 @@ def early_fusion(databases_list, partition=0.2, FS=[]):
 
         Y = df1['label_encoded']
         X = df1.drop(['label_encoded'], axis=1)
+
+        if gender == 'Male':
+            positions = X[X['PtID'].isin(consts.ptid_male)].index
+        elif gender == 'Female':
+            positions = X[X['PtID'].isin(consts.ptid_female)].index
+        else:
+            positions =[]
         list_data.append(X)
         if len(FS) > 0:
             features=relief_bbdd(X, Y, e, test_s=z,FS=FS[j],path=consts.PATH_PROJECT_TABULAR_METRICS)
             for u in list(features):
                 features_final.append(u)
             list_pred_train, list_pred_test, list_y_train, list_y_test = main_early_fusion(list_data, Y, databases_list,
-                                                                                           z, 300)
+                                                                                           z, 300, positions)
         else:
-            list_pred_train, list_pred_test, list_y_train, list_y_test = main_early_fusion(list_data, Y, databases_list, z,10)
+            list_pred_train, list_pred_test, list_y_train, list_y_test = main_early_fusion(list_data, Y, databases_list, z,10,positions)
     if len(FS) > 0:
         print(len(features_final))
         df_train1 = list_pred_train[0][features_final]

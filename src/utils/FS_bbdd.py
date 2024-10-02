@@ -93,7 +93,7 @@ def relief_FS(X,Y,relief,i):
         columns=['names', column])
     return df
 
-def relief_bbdd(x_features, y_label,bbdd_name,test_s=0.2,FS=True,path=''):
+def relief_bbdd(x_features, y_label, bbdd_name,test_s=0.2,FS=True,path=''):
     if 'PtID' in x_features.columns:
         x_features.drop(['PtID'], axis=1, inplace=True)
     for i in range(len(consts.SEEDS)):

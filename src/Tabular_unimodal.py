@@ -77,4 +77,4 @@ def tabular_classification(databases_list, features_selected=[], paths=''):
             df_metrics.to_csv(os.path.join(paths, e+'_FS.csv'))
         else:
             df_metrics = call_clfs(X, Y, e, X.columns, 0.2)
-        df_metrics.to_csv(os.path.join(paths, e+'.csv'))
+            df_metrics.to_csv(os.path.join(paths, e+'.csv'))

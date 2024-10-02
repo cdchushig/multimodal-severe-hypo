@@ -476,8 +476,18 @@ def preprocessing_function(x_features, y_label, i, bbdd_name, test_s, tfidf=10):
 
         scaler = MinMaxScaler()
         #scaler = StandardScaler()
-        scaled_train = X_train.drop(Cat, axis=1)
-        scaled_test = X_test.drop(Cat, axis=1)
+
+        try:
+            scaled_train = X_train.drop(Cat, axis=1)
+            scaled_test = X_test.drop(Cat, axis=1)
+        except KeyError:
+            Cat = ['GrPegDomHand', 'ReadCardCorrLens',
+                   'ReadCardLowLine_20/16', 'ReadCardLowLine_20/20', 'ReadCardLowLine_20/25',
+                   'ReadCardLowLine_20/32', 'ReadCardLowLine_20/40',
+                   'ReadCardLowLine_20/50', 'ReadCardLowLine_20/63',
+                   'ReadCardLowLine_20/80']
+            scaled_train = X_train.drop(Cat, axis=1)
+            scaled_test = X_test.drop(Cat, axis=1)
 
         scaler.fit(scaled_train)
         scaled_train[scaled_train.columns] = scaler.transform(scaled_train)
