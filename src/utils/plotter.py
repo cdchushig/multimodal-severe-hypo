@@ -65,7 +65,7 @@ def plot_results_AUCROC(modality):
     tabular_data = ['Unaware', 'Fear', 'BTOTSCORE',  'MOCA', 'Lifestyle', 'BSample', 'Attitude', 'Depression']
     path_old = os.path.join(consts.PATH_PROJECT_REPORTS, 'metrics_standard')
     path_new = os.path.join(consts.PATH_PROJECT_REPORTS, 'metrics_new_models')
-    if modality == 'tabular':
+    if modality == 'Tabular':
         for name in tabular_data:
             df_old = pd.read_csv(os.path.join(path_old, 'tabular', 'metrics', f'{name}.csv'), index_col=0)
             df_new = pd.read_csv(os.path.join(path_new, 'tabular', f'{name}.csv'), index_col=0)
@@ -77,6 +77,7 @@ def plot_results_AUCROC(modality):
                 'dt': 'DT',
                 'REGLOG': 'LR',
                 'lasso': 'LASSO',
+                'knn': 'KNN',
             })
 
             df_old_fs = pd.read_csv(os.path.join(path_old, 'tabular', 'metrics', f'{name}_FS.csv'), index_col=0)
@@ -90,6 +91,7 @@ def plot_results_AUCROC(modality):
                 'dt': 'DT',
                 'reglog': 'LR',
                 'lasso': 'LASSO',
+                'knn': 'KNN',
             })
 
             plot_auc_unimodal_clf(df_total_auc, df_total_auc_fs, name)
@@ -118,6 +120,7 @@ def plot_results_AUCROC(modality):
             'dt': 'DT',
             'REGLOG': 'LR',
             'lasso': 'LASSO',
+            'knn': 'KNN',
         })
         plot_auc_unimodal_clf(df_total_auc, df_total_auc_fs, 'Time_series')
 
@@ -134,6 +137,7 @@ def plot_results_AUCROC(modality):
                 'REGLOG': 'LR',
                 'lasso': 'LASSO',
                 'knn': 'KNN',
+                'knn': 'KNN',
             })
 
             df_old_fs = pd.read_csv(os.path.join(path_old, 'text',name, f'{name}_FS.csv'), index_col=0)
@@ -147,6 +151,7 @@ def plot_results_AUCROC(modality):
                 'dt': 'DT',
                 'REGLOG': 'LR',
                 'lasso': 'LASSO',
+                'knn': 'KNN',
             })
             plot_auc_unimodal_clf(df_total_auc, df_total_auc_fs, name)
     if modality == 'Fusion':
@@ -207,11 +212,13 @@ def plot_auc_unimodal_clf(df_total_auc, df_total_auc_fs, name):
     ax.set_ylim(0.15, 0.95)
     ax.tick_params(axis='both', which='major', labelsize=17)
     legend = ax.legend()
+    plt.title(name, fontsize=20)
 
     for text in legend.get_texts():
         text.set_fontsize(18)
 
     plt.savefig(os.path.join(consts.PATH_PROJECT_FIGURES, f'plot_AUCROC_{name}.png'))
+
 
 
 def plot_fusion_AUCROC(df_early,df_late):
@@ -240,11 +247,18 @@ def plot_fusion_AUCROC(df_early,df_late):
     ax.set_ylim(0.15, 0.95)
     ax.tick_params(axis='both', which='major', labelsize=17)
     legend = ax.legend()
-
+    plt.title('Multimodal Fusion',fontsize=20)
     for text in legend.get_texts():
         text.set_fontsize(18)
 
     plt.savefig(os.path.join(consts.PATH_PROJECT_FIGURES, f'plot_AUCROC_fusion.png'))
+
+
+plot_results_AUCROC('Tabular')
+plot_results_AUCROC('Text')
+plot_results_AUCROC('Time_series')
+plot_results_AUCROC('Fusion')
+
 
 def matrix_plot(df, name):
     plt.figure(figsize=(8, 7))
