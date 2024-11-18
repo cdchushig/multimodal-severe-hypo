@@ -26,6 +26,18 @@ def early_fusion_approaches(gender = 'global'):
 
         # ### EARLY FUSION###
         # print('** EARLY FUSION **')
+
+
+        databases_list2 = [['Unaware', 'Fear', 'BTOTSCORE', 'MOCA', 'Lifestyle', 'BSample',
+                          'Attitude', 'Depression'],['Medications', 'Conditions'],
+                           ['Unaware', 'Fear', 'Signal', 'BTOTSCORE', 'MOCA', 'Lifestyle', 'BSample',
+                          'Attitude', 'Depression'],
+                           ['Unaware', 'Fear', 'Medications','BTOTSCORE', 'Conditions', 'MOCA', 'Lifestyle', 'BSample',
+                          'Attitude', 'Depression'],['Medications', 'Signal', 'Conditions']]
+        for e in databases_list2:
+            train, test = early_fusion(e, partition=0.2)
+            classifier_early(train, test,save_path =consts.PATH_PROJECT_FUSION_METRICS_MODALITIES)
+
         databases_list = ['Unaware', 'Fear', 'Medications', 'Signal', 'BTOTSCORE', 'Conditions', 'MOCA', 'Lifestyle', 'BSample',
                           'Attitude', 'Depression']
         train, test = early_fusion(databases_list, partition=0.2)
@@ -68,6 +80,11 @@ def early_fusion_approaches(gender = 'global'):
         ###EARLY-IA-PRE-FS###
         print('** EARLY FUSION IA-PRE-FS**')
         FS_list = [9, 7, 2, 8, 11, 3, 4, 6, 4, 5, 4]
+
+        # train, test = early_fusion(databases_list[0:5], partition=0.2, FS=FS_list[0:5])
+        # u = call_clf_interpretability_SHAP(train, test, 'knn')
+
+
         for e in range(2, len(databases_list) + 1):
             train, test = early_fusion(databases_list[0:e], partition=0.2, FS=FS_list[0:e])
             if e== 5:
@@ -75,6 +92,7 @@ def early_fusion_approaches(gender = 'global'):
                 u = call_cf_interpretability_cnf(train, test, 'knn')
             classifier_early(train, test)
             break
+
 
 
 ### LATE FUSION  CREATION TRAIN TEST###
@@ -140,45 +158,59 @@ def READ_LATE(database_list, FS=False):
 def late_fusion_main():
     ###LATE FUSION APPROACHES###
 
-    databases_list = ['Unaware', 'Fear', 'Medications', 'Signal', 'BTOTSCORE', 'Conditions', 'MOCA', 'Lifestyle',
-                       'BSample', 'Depression', 'label']
-    train, test = READ_LATE(databases_list)
-
-    ###LATE FUSION ###
-    print('** LATE FUSION **')
-    N_A_N = Meta_classifier(train, test, meta='Average', FS=False, names='_Total_noFS')
-    N_A_N = Meta_classifier(train, test, meta='clf', FS=False, names='_Total_noFS')
-
-    print('** LATE FUSION IA **')
-    ###LATE FUSION IA ###
-    for e in range(2, 8):
-        train, test = READ_LATE(databases_list[:e])
-        N_A_N = Meta_classifier(train, test, meta='Average', FS=False, names=str(e) + '_noFS')
-        N_A_N = Meta_classifier(train, test, meta='clf', FS=False, names=str(e) + '_noFS')
 
 
-    ###LATE FUSION POST-FS###
+    ## LATE FUSION PER MODALITY ##
+    databases_list2 = [['Unaware', 'Fear', 'BTOTSCORE', 'MOCA', 'Lifestyle', 'BSample',
+                        'Attitude', 'Depression'], ['Medications', 'Conditions'],
+                       ['Unaware', 'Fear', 'Signal', 'BTOTSCORE', 'MOCA', 'Lifestyle', 'BSample',
+                        'Attitude', 'Depression'],
+                       ['Unaware', 'Fear', 'Medications', 'BTOTSCORE', 'Conditions', 'MOCA', 'Lifestyle', 'BSample',
+                        'Attitude', 'Depression'], ['Medications', 'Signal', 'Conditions']]
+    for names in databases_list2:
+        train, test = READ_LATE(names)
+        N_A_N = Meta_classifier(train, test, meta='Average', FS=False, names=f'_Total_noFS_{len(names)}')
+        N_A_N = Meta_classifier(train, test, meta='clf', FS=False, names=f'_Total_noFS_{len(names)}')
 
-    print('** LATE FUSION POST-FS **')
-    N_A_N = Meta_classifier(train, test, meta='Average', FS=3, names='TOTAL_postFS')
-    N_A_N = Meta_classifier(train, test, meta='clf', FS=3, names='TOTAL_postFS')
-
-    ###LATE FUSION IA PRE FS###
-    print('** LATE FUSION IA PRE FS **')
-    for e in range(2, 8):
-        train, test = READ_LATE(databases_list[:e], FS=True)
-        u = call_clf_interpretability_SHAP(train, test,'knn')
-        N_A_N = Meta_classifier(train, test, meta='Average', FS=False, names=str(e) + '_preFS')
-        N_A_N = Meta_classifier(train, test, meta='classifier', FS=False, names=str(e) + '_preFS')
-
-    ###LATE FUSION DOUBLE FS###
-    print('** LATE FUSION DOUBLE FS **')
-    train, test = READ_LATE(databases_list, FS=True)
-    N_A_N = Meta_classifier(train, test, meta='Average', FS=5, names='5_doubleFS')
-    N_A_N = Meta_classifier(train, test, meta='clf', FS=5, names='5_doubleFS')
-
-    ###LATE FUSION Pre FS###
-    print('LATE FUSION Pre FS**')
-    train, test = READ_LATE(databases_list, FS=True)
-    N_A_N = Meta_classifier(train, test, meta='clf', FS=False, names='Total_preFS')
-    N_A_N = Meta_classifier(train, test, meta='Average', FS=False, names='Total_preFS')
+    #
+    # ###LATE FUSION ###
+    # databases_list = ['Unaware', 'Fear', 'Medications', 'Signal', 'BTOTSCORE', 'Conditions', 'MOCA', 'Lifestyle',
+    #                    'BSample', 'Depression', 'label']
+    # train, test = READ_LATE(databases_list)
+    # print('** LATE FUSION **')
+    # N_A_N = Meta_classifier(train, test, meta='Average', FS=False, names='_Total_noFS')
+    # N_A_N = Meta_classifier(train, test, meta='clf', FS=False, names='_Total_noFS')
+    #
+    # print('** LATE FUSION IA **')
+    # ###LATE FUSION IA ###
+    # for e in range(2, 8):
+    #     train, test = READ_LATE(databases_list[:e])
+    #     N_A_N = Meta_classifier(train, test, meta='Average', FS=False, names=str(e) + '_noFS')
+    #     N_A_N = Meta_classifier(train, test, meta='clf', FS=False, names=str(e) + '_noFS')
+    #
+    #
+    # ###LATE FUSION POST-FS###
+    #
+    # print('** LATE FUSION POST-FS **')
+    # N_A_N = Meta_classifier(train, test, meta='Average', FS=3, names='TOTAL_postFS')
+    # N_A_N = Meta_classifier(train, test, meta='clf', FS=3, names='TOTAL_postFS')
+    #
+    # ###LATE FUSION IA PRE FS###
+    # print('** LATE FUSION IA PRE FS **')
+    # for e in range(2, 8):
+    #     train, test = READ_LATE(databases_list[:e], FS=True)
+    #     u = call_clf_interpretability_SHAP(train, test,'knn')
+    #     N_A_N = Meta_classifier(train, test, meta='Average', FS=False, names=str(e) + '_preFS')
+    #     N_A_N = Meta_classifier(train, test, meta='classifier', FS=False, names=str(e) + '_preFS')
+    #
+    # ###LATE FUSION DOUBLE FS###
+    # print('** LATE FUSION DOUBLE FS **')
+    # train, test = READ_LATE(databases_list, FS=True)
+    # N_A_N = Meta_classifier(train, test, meta='Average', FS=5, names='5_doubleFS')
+    # N_A_N = Meta_classifier(train, test, meta='clf', FS=5, names='5_doubleFS')
+    #
+    # ###LATE FUSION Pre FS###
+    # print('LATE FUSION Pre FS**')
+    # train, test = READ_LATE(databases_list, FS=True)
+    # N_A_N = Meta_classifier(train, test, meta='clf', FS=False, names='Total_preFS')
+    # N_A_N = Meta_classifier(train, test, meta='Average', FS=False, names='Total_preFS')

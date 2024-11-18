@@ -9,7 +9,7 @@ import shap
 from PyALE import ale
 import math
 import dice_ml
-
+from matplotlib.lines import Line2D
 
 continuous_features = ['medications3_2', 'medications3_0', 'cde', 'dee', 'edd', 'hgg', 'fgf', 'bbc', 'dcc', 'bcd',
 'GrPegNonTotTime', 'TrailMakBTotTime', 'GrPegDomTotTime', 'TrailMakATotTime', 'FrailtyFirstWalkTotTimeSec',
@@ -26,9 +26,15 @@ def call_clf_interpretability_SHAP(train_databases, test_databases,
 
         i=pd.concat([test_databases[0].drop('label',axis=1),test_databases[1].drop('label',axis=1),test_databases[2].drop('label',axis=1),test_databases[3].drop('label',axis=1),test_databases[4].drop('label',axis=1)])
         dataframe = pd.DataFrame(list2, columns=train_databases[0].columns[:-1])
+        absolute_sums = dataframe.abs()
+        result =  pd.DataFrame({key: absolute_sums[cols].sum(axis=1) for key, cols in consts.dict_names.items()})
+        importances =result.sum().to_dict()
         plt.close()
         shap.summary_plot(np.asarray(list2),i.astype('float'),max_display=len(dataframe.columns))
         plt.savefig(os.path.join(path, 'SHAP_Early_bee.pdf'))
+
+
+
         # o=abs(dataframe).mean()
         # o1 = abs(dataframe).std()
         # df = pd.DataFrame(columns=['mean', 'std'])
@@ -59,6 +65,48 @@ def call_clf_interpretability_SHAP(train_databases, test_databases,
                                                 seed=seeds, SHAP=SHAP)
 
 
+def plot_final_importance(dictionary):
+    plt.figure(figsize=(8, 6))
+    groups = list(dictionary.keys())
+    values = list(dictionary.values())
+    colors = ['skyblue', 'salmon', 'red', 'green', 'grey']
+
+    x_positions = [5, 2, 8, 2, 8]   # Valores aleatorios entre 0 y 10 para el eje X
+    y_positions =  [5, 2, 8, 8, 2 ] # Valores aleatorios entre 0 y 10 para el eje Y
+    # Dibujar los círculos
+    for i, (group, value) in enumerate(dictionary.items()):
+        plt.scatter(x_positions[i], y_positions[i], s=value * 200, color=colors[i], alpha=0.6)
+        if i == 4 :
+            plt.text(x_positions[i], y_positions[i], str(np.round(value)), color='black', ha='center', va='center', fontsize=14)
+        else:
+            plt.text(x_positions[i], y_positions[i], str(np.round(value)), color='black', ha='center', va='center', fontsize=14)
+    # Personalizar gráfico
+    plt.xticks([])  # Quitar las etiquetas del eje X
+    plt.yticks([])  # Quitar las etiquetas del eje Y
+    plt.xlim([0,10])
+    plt.ylim([0, 10])
+    # for spine in plt.gca().spines.values():
+    #     spine.set_visible(False)
+    legend_handles = [Line2D([0], [0], marker='o', color='w', markerfacecolor=colors[0], markersize=15, label='Unaware'),
+                      Line2D([0], [0], marker='o', color='w', markerfacecolor=colors[1], markersize=15, label='Fear'),
+                      Line2D([0], [0], marker='o', color='w', markerfacecolor=colors[2], markersize=15, label='Totscores'),
+                      Line2D([0], [0], marker='o', color='w', markerfacecolor=colors[3], markersize=15, label='CGM'),
+                      Line2D([0], [0], marker='o', color='w', markerfacecolor=colors[4], markersize=15, label='Medications')]
+    plt.legend(handles=legend_handles,title="Datasets", loc='upper right', bbox_to_anchor=(1.22, 1), borderaxespad=0.)
+    plt.savefig(os.path.join(consts.PATH_PROJECT_FUSION_FIGURES, 'Importance_datasets.pdf'), dpi=300, bbox_inches='tight')
+
+    plt.figure(figsize=(8, 6))
+    pd.Series(dictionary).plot(kind='bar', x='Categoría', y='Valor', color='skyblue', legend=False)
+    plt.xticks(rotation=0, fontsize=13)
+    # Agregar título y etiquetas
+    plt.xlabel('Dataset', fontsize=15)
+    plt.ylabel('Importance Value', fontsize=15)
+    # Mostrar el gráfico
+    plt.savefig(os.path.join(consts.PATH_PROJECT_FUSION_FIGURES, 'Importance_datasets_bar.pdf'), dpi=300,
+                bbox_inches='tight')
+
+    # Mostrar gráfico
+    # plt.show()
 def call_cf_interpretability_cnf(train_databases, test_databases,
                 clfs, path=consts.PATH_PROJECT_FUSION_FIGURES):
 

@@ -24,9 +24,9 @@ coloredlogs.install(level='DEBUG', logger=logger)
 def parse_arguments(parser):
     parser.add_argument('--type_data', default='multimodal', type=str)
     parser.add_argument('--type_modality', default='time_series', type=str)
-    parser.add_argument('--type_fusion', default='early', type=str)
+    parser.add_argument('--type_fusion', default='late', type=str)
     parser.add_argument('--preprocessing_data', default=False, type=bool)
-    parser.add_argument('--gender', default='Female', type=str)
+    parser.add_argument('--gender', default='global', type=str)
     return parser.parse_args()
 
 
@@ -55,11 +55,13 @@ if args.type_data == 'unimodal':
         data_final = pd.read_csv(os.path.join(consts.PATH_PROJECT_DATA_PREPROCESSED_SIGNAL, 'gSAX.csv'))
         Signal_FS(data_final)
 
+
     elif args.type_modality == 'text':
         # obtain results using medical conditions
         conditions_unimodal()
         # obtain results using medications
         medications_unimodal()
+
 
 # Models using multimodal data
 elif args.type_data == 'multimodal':
@@ -68,7 +70,7 @@ elif args.type_data == 'multimodal':
 
 
     elif args.type_fusion == 'late': # late fusion
-        late_train_test_creation()
+        # late_train_test_creation()
         late_fusion_main()
 
 ## PLOTS

@@ -375,7 +375,7 @@ def train_several_clfs_fusion(clf_name, train_databases, test_databases, feature
 
  # 'DeepTLF', 'TabPFN', 'MLP', 'RandomForest'
 def call_models_fusion(train_databases, test_databases,
-                list_clfs=['knn'], features=[],SHAP=False):
+                list_clfs=['RandomForest', 'knn', 'svm', 'dt', 'reglog', 'lasso', 'TabPFN', 'MLP'], features=[],SHAP=False):
     df_metrics = pd.DataFrame(columns=['model', 'metric', 'mean', 'std'])
 
     for clf_name in list_clfs:

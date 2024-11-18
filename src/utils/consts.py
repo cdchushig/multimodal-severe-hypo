@@ -19,6 +19,7 @@ PATH_PROJECT_REPORTS_SIGNAL = Path.joinpath(PATH_PROJECT_DIR, 'reports','time_se
 PATH_PROJECT_TEXT_METRICS = Path.joinpath(PATH_PROJECT_DIR, 'reports','text')
 PATH_PROJECT_FS_METRICS = Path.joinpath(PATH_PROJECT_DIR, 'reports','FS')
 PATH_PROJECT_FUSION_METRICS = Path.joinpath(PATH_PROJECT_DIR, 'reports','fusion','metrics')
+PATH_PROJECT_FUSION_METRICS_MODALITIES = Path.joinpath(PATH_PROJECT_DIR, 'reports','fusion','metrics','modalities')
 PATH_PROJECT_FUSION_METRICS_GENDER_MALE = Path.joinpath(PATH_PROJECT_DIR, 'reports','fusion','metrics', 'gender',
                                                         'male')
 PATH_PROJECT_FUSION_METRICS_GENDER_FEMALE = Path.joinpath(PATH_PROJECT_DIR, 'reports','fusion','metrics', 'gender',
@@ -58,3 +59,19 @@ BBDD_HYPO_CGM = 'BDataCGM'
 BBDD_ID_HYPO_UNAWARE = 'BHypoUnawareSurvey'
 BBDD_HYPO_UNAWARE = 'unaware'
 BBDD_HYPO_LABEL = 'BPtRoster'
+
+
+dict_names={'Unaware': ['LowBGSympCat_ALW', 'Bel70PastMonNoSymp_N', 'ExtentSympLowBG_A', 'LowBGSympCat_STM', 'LowBGLostSymp',
+             'FeelSympLowBG_60-69',  'ExtentSympLowBG_S', 'FeelSympLowBG_0-40', 'Bel70PastMonNoSymp_2-3TW'],
+
+'Fear': ['AvoidAloneLowBG', 'WorryNoHelp', 'WorryNotRecLowBG', 'WorryReacAlone', 'EatFirstSignLowBG',
+             'WorryPassOut',  'WorryReactDrive'],
+
+'Totscores': ['SymbDigWTotCorr', 'FrailtySecWalkTotTimeSec', 'ReadCardCorrLens', 'GrPegNonTotTime', 'TrailMakBTotTime',
+               'GrPegDomTotTime', 'TrailMakATotTime', 'FrailtyFirstWalkTotTimeSec','SymbDigOTotCorr',
+               'BGVisit2', 'DukeSocSatScore'],
+
+'CGM': [ 'cde', 'dee', 'edd', 'hgg', 'fgf', 'bbc', 'dcc', 'bcd'],
+
+'Medications' : ['medications3_2', 'medications3_0'],
+}
