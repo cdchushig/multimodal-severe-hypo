@@ -43,3 +43,14 @@ def split_data(data: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame, np.array
     _test_df = test_data.drop([LABEL], axis=1)
     return _train_ds, _test_df, _test_label
 
+def compute_metrics(y_true, y_pred):
+    tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
+    specificity_val = tn / (tn + fp)
+
+    return {
+        f'accuracy': accuracy_score(y_true, y_pred),
+        f'specificity': specificity_val,
+        f'recall': recall_score(y_true, y_pred),
+        f'roc_auc': roc_auc_score(y_true, y_pred),
+
+    }

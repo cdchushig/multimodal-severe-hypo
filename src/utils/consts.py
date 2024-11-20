@@ -75,3 +75,17 @@ dict_names={'Unaware': ['LowBGSympCat_ALW', 'Bel70PastMonNoSymp_N', 'ExtentSympL
 
 'Medications' : ['medications3_2', 'medications3_0'],
 }
+
+
+params_interval = {
+                'interval_depth': [4,6,8],
+                'quantile_divisor': [3,4,6]}
+
+params_shapelet = {
+                'max_shapelets': [100, 300, 500],
+                'use_prime_dilations': [True],
+                'distance': ['dtw','euclidean', 'manhattan', 'minkowski']}
+
+params_gru = {'hidden_dim':[50,100,200],
+                'n_layers':[2,4,6],
+              'num_epochs': [10,20]}

@@ -28,8 +28,12 @@ def call_clf_interpretability_SHAP(train_databases, test_databases,
         dataframe = pd.DataFrame(list2, columns=train_databases[0].columns[:-1])
         absolute_sums = dataframe.abs()
         result =  pd.DataFrame({key: absolute_sums[cols].sum(axis=1) for key, cols in consts.dict_names.items()})
-        importances =result.sum().to_dict()
-        plt.close()
+        features = [9, 7, 11, 8, 2]
+        importances =result.sum().div(features).to_dict()
+
+
+        plot_final_importance(importances)
+
         shap.summary_plot(np.asarray(list2),i.astype('float'),max_display=len(dataframe.columns))
         plt.savefig(os.path.join(path, 'SHAP_Early_bee.pdf'))
 
@@ -69,6 +73,7 @@ def plot_final_importance(dictionary):
     plt.figure(figsize=(8, 6))
     groups = list(dictionary.keys())
     values = list(dictionary.values())
+
     colors = ['skyblue', 'salmon', 'red', 'green', 'grey']
 
     x_positions = [5, 2, 8, 2, 8]   # Valores aleatorios entre 0 y 10 para el eje X

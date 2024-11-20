@@ -1,6 +1,5 @@
 import os
 import time
-
 import pandas as pd
 import matplotlib.pyplot as plt
 from utils.plotter import lollipop_plot
@@ -24,7 +23,7 @@ coloredlogs.install(level='DEBUG', logger=logger)
 def parse_arguments(parser):
     parser.add_argument('--type_data', default='multimodal', type=str)
     parser.add_argument('--type_modality', default='time_series', type=str)
-    parser.add_argument('--type_fusion', default='late', type=str)
+    parser.add_argument('--type_fusion', default='early', type=str)
     parser.add_argument('--preprocessing_data', default=False, type=bool)
     parser.add_argument('--gender', default='global', type=str)
     return parser.parse_args()
@@ -70,7 +69,7 @@ elif args.type_data == 'multimodal':
 
 
     elif args.type_fusion == 'late': # late fusion
-        # late_train_test_creation()
+        late_train_test_creation()
         late_fusion_main()
 
 ## PLOTS
